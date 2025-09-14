@@ -1,0 +1,839 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ACTIVO {
+  id_activo                                               Int                    @id
+  activo                                                  String                 @db.VarChar
+  fecha_creacion                                          DateTime               @db.Date
+  id_usuario_creacion                                     Int
+  id_estado_registro                                      String                 @db.Bit(1)
+  id_usuario                                              Int?
+  id_producto                                             Int?
+  id_tipo_activo                                          Int
+  ultima_fecha_mantenimiento                              DateTime               @db.Date
+  id_usuario_aplica_mantenimiento                         Int
+  id_tipo_riesgo                                          Int
+  USUARIO                                                 USUARIO?               @relation(fields: [id_usuario], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  CAT_TIPO_ACTIVO                                         CAT_TIPO_ACTIVO        @relation(fields: [id_tipo_activo], references: [id_tipo_activo], onDelete: NoAction, onUpdate: NoAction, map: "fk_activo_cat_tipo_activo")
+  PRODUCTO                                                PRODUCTO?              @relation(fields: [id_producto], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_activo_producto")
+  USUARIO_ACTIVO_id_usuario_aplica_mantenimientoToUSUARIO USUARIO                @relation("ACTIVO_id_usuario_aplica_mantenimientoToUSUARIO", fields: [id_usuario_aplica_mantenimiento], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_activo_usuario_mantenimiento")
+  CAT_TIPO_RIESGO_ACTIVO                                  CAT_TIPO_RIESGO_ACTIVO @relation(fields: [id_tipo_riesgo], references: [id_tipo_riesgo_activo], onDelete: NoAction, onUpdate: NoAction, map: "fk_contraint_riesto_activo_activo")
+  MANTENIMIENTO                                           MANTENIMIENTO[]
+}
+
+model BITACORA_BORRADO_INTERNO {
+  id_bitacora                  Int      @id
+  entidad_modificada           String   @db.VarChar
+  fecha_modificacion           String   @db.VarChar
+  id_entidad_modificada        Int
+  usuario_modifica             String   @db.VarChar
+  valor_modificado_varchar     String?  @db.VarChar
+  observacion                  String?  @db.VarChar
+  valor_modificado_int_decimal Decimal? @db.Decimal
+}
+
+model BITACORA_MODIFICACION_INTERNA {
+  id_bitacora                  Int      @id
+  entidad_modificada           String   @db.VarChar
+  fecha_modificacion           String   @db.VarChar
+  id_entidad_modificada        Int
+  usuario_modifica             String   @db.VarChar
+  valor_modificado_varchar     String?  @db.VarChar
+  observacion                  String?  @db.VarChar
+  valor_modificado_int_decimal Decimal? @db.Decimal
+}
+
+model CAT_ACCION_CORRECTIVA {
+  id_accion_correctiva Int             @id
+  accion               String          @db.VarChar
+  id_estado_registro   String          @db.Bit(1)
+  id_usuario_creacion  Int
+  fecha_creacion       DateTime        @db.Date
+  MANTENIMIENTO        MANTENIMIENTO[]
+}
+
+model CAT_DEPARTAMENTO {
+  id_departamento         Int             @id @default(autoincrement())
+  nombre_departamento     String          @db.VarChar
+  fecha_creacion          DateTime        @db.Date
+  fecha_modificacion      DateTime        @db.Date
+  id_usuario_creacion     Int
+  id_usuario_modificacion Int
+  id_estado_registro      String          @db.Bit(1)
+  id_pais                 Int
+  CAT_PAIS                CAT_PAIS        @relation(fields: [id_pais], references: [id_pais], onDelete: NoAction, onUpdate: NoAction, map: "fk_departamento_pais")
+  CAT_MUNICIPIO           CAT_MUNICIPIO[]
+}
+
+model CAT_ESTADO_PEDIDO {
+  id_estado_pedido       Int              @id
+  estado_pedido          String           @db.VarChar
+  fecha_creacion         DateTime         @db.Date
+  id_estado_registro     String           @db.Bit(1)
+  id_usuario_creacion    Int
+  id_estado_pedido_padre Int?
+  CLIENTE_PEDIDO         CLIENTE_PEDIDO[]
+}
+
+model CAT_ESTADO_PRODUCTO {
+  id_estado_producto  Int        @id @default(autoincrement())
+  nombre_estado       String     @db.VarChar
+  fecha_creacion      DateTime   @db.Date
+  id_usuario_creacion Int
+  id_estado_registro  String     @db.Bit(1)
+  PRODUCTO            PRODUCTO[]
+}
+
+model CAT_ESTADO_SUCURSAL {
+  id_estado_sucursal  Int        @id @default(autoincrement())
+  estado              String     @db.VarChar
+  id_usuario_creacion Int
+  fecha_creacion      DateTime   @db.Date
+  id_estado_registro  String     @db.Bit(1)
+  SUCURSAL            SUCURSAL[]
+}
+
+model CAT_ESTADO_TELEFONO {
+  id_estado_telefono  Int                @id @default(autoincrement())
+  nombre_estado       String?            @db.VarChar
+  fecha_creacion      DateTime?          @db.Date
+  id_estado_registro  String?            @db.Bit(1)
+  id_usuario_creacion Int?
+  TELEFONO_CLIENTE    TELEFONO_CLIENTE[]
+  TELEFONO_USUARIO    TELEFONO_USUARIO[]
+}
+
+model CAT_ESTADO_USUARIO {
+  id_estado_usuario   Int       @id @default(autoincrement())
+  estado              String    @db.VarChar
+  id_estado_registro  String    @db.Bit(1)
+  id_usuario_creacion Int
+  fecha_creacion      DateTime  @db.Date
+  USUARIO             USUARIO[]
+}
+
+model CAT_MUNICIPIO {
+  id_municipio            Int              @id @default(autoincrement())
+  nombre_municipio        String           @db.VarChar
+  fecha_creacion          DateTime         @db.Date
+  fecha_modificacion      DateTime         @db.Date
+  id_usuario_creacion     Int
+  id_usuario_modificacion Int
+  id_estado_registro      String           @db.Bit(1)
+  id_departamento         Int
+  CAT_DEPARTAMENTO        CAT_DEPARTAMENTO @relation(fields: [id_departamento], references: [id_departamento], onDelete: NoAction, onUpdate: NoAction, map: "fk_contraint_cat_municipio_departamento")
+  DIRECCION               DIRECCION[]
+}
+
+model CAT_PAIS {
+  id_pais                 Int                @id @default(autoincrement())
+  nombre_pais             String             @db.VarChar
+  fecha_creacion          DateTime           @db.Date
+  fecha_modificacion      DateTime           @db.Date
+  id_usuario_creacion     Int
+  id_usuario_modificacion Int
+  id_estado_registro      String             @db.Bit(1)
+  CAT_DEPARTAMENTO        CAT_DEPARTAMENTO[]
+}
+
+model CAT_PROVEEDOR {
+  id_proveedor            Int        @id @default(autoincrement())
+  nombre_proveedor        String     @db.VarChar
+  fecha_creacion          DateTime   @db.Date
+  fecha_modificacion      DateTime   @db.Date
+  id_usuario_creacion     Int
+  id_usuario_modificacion Int
+  id_estado_registro      String     @db.Bit(1)
+  direccion               String?    @db.VarChar(255)
+  telefono                String?    @db.VarChar(50)
+  telefono_secundario     String?    @db.VarChar(50)
+  correo_electronico      String?    @db.VarChar(155)
+  sitio_web               String?    @db.VarChar(255)
+  puesto_de_contacto      String?    @db.VarChar(155)
+  nombre_contacto         String?    @db.VarChar(155)
+  notas                   String?    @db.VarChar(355)
+  PRODUCTO                PRODUCTO[]
+}
+
+model CAT_RAZON_MOVIMIENTO {
+  id_razon_movimiento   Int                     @id @default(autoincrement())
+  razon_movimiento      String                  @db.VarChar
+  fecha_creacion        DateTime                @db.Date
+  id_usuario_creacion   Int
+  id_estado_registro    String                  @db.Bit(1)
+  MOVIMIENTO_INVENTARIO MOVIMIENTO_INVENTARIO[]
+}
+
+model CAT_SEXO {
+  sexo_id             Int       @id @default(autoincrement())
+  descripcion         String    @db.VarChar
+  fecha_creacion      DateTime  @db.Date
+  id_usuario_creacion Int
+  id_estado_registro  String?   @db.Bit(1)
+  CLIENTE             CLIENTE[]
+  USUARIO             USUARIO[]
+}
+
+model CAT_TIPO_ACTIVO {
+  id_tipo_activo      Int      @id
+  tipo_activo         String   @db.VarChar
+  fecha_creacion      DateTime @db.Date
+  id_usuario_creacion Int
+  id_estado_registro  String   @db.Bit(1)
+  ACTIVO              ACTIVO[]
+}
+
+model CAT_TIPO_CONFIGURACION_GENERAL {
+  id_tipo_configuracion_general Int                     @id
+  tipo_configuracion            String                  @db.VarChar
+  descripcion                   String?                 @db.VarChar
+  id_estado_registro            String                  @db.Bit(1)
+  fecha_creacion                DateTime                @db.Date
+  id_usuario_creacion           Int
+  CONFIGURACION_GENERAL         CONFIGURACION_GENERAL[]
+}
+
+model CAT_TIPO_CONTACTO {
+  id_tipo_parametro_general Int                @id
+  nombre_tipo_contacto      String             @db.VarChar
+  fecha_creacion            DateTime           @db.Date
+  id_usuario_creacion       Int
+  id_estado_registro        String             @db.Bit(1)
+  id_usuario_modificacion   Int
+  fecha_modificacion        DateTime           @db.Date
+  USUARIO_CONTACTO          USUARIO_CONTACTO[]
+}
+
+model CAT_TIPO_DESCUENTO {
+  id_tipo_descuento   Int      @id
+  descuento           String   @db.VarChar
+  id_usuario_creacion Int
+  fecha_creacion      DateTime @db.Date
+}
+
+model CAT_TIPO_DOCUMENTO {
+  id_tipo_documento      Int                      @id
+  descripcion            String                   @db.VarChar
+  valor                  String                   @db.VarChar
+  id_estado_registro     String                   @db.Bit(1)
+  fecha_creacion         DateTime                 @db.Date
+  fecha_modificacion     DateTime                 @db.Date
+  id_usuario_modifica    Int
+  id_usuario_creacion    Int
+  CLIENTE_IDENTIFICACION CLIENTE_IDENTIFICACION[]
+  USUARIO_IDENTIFICACION USUARIO_IDENTIFICACION[]
+}
+
+model CAT_TIPO_INCIDENTE {
+  id_tipo_incidente   Int      @id
+  tipo_incidente      String   @db.VarChar
+  descripcion         String?  @db.VarChar
+  fecha_creacion      DateTime @db.Date
+  id_usuario_creacion Int
+  id_estado_registro  String   @db.Bit(1)
+}
+
+model CAT_TIPO_MOVIMIENTO {
+  id_tipo_movimiento    Int                     @id @default(autoincrement())
+  tipo_movimiento       String                  @db.VarChar
+  fecha_creacion        DateTime                @db.Date
+  id_usuario_creacion   Int
+  id_estado_registro    String                  @db.Bit(1)
+  MOVIMIENTO_INVENTARIO MOVIMIENTO_INVENTARIO[]
+}
+
+model CAT_TIPO_OFERTA {
+  id_tipo_oferta      Int      @id @default(autoincrement())
+  nombre_tipo_oferta  String   @db.VarChar
+  descripcion         String?  @db.VarChar
+  id_estado_registro  String   @db.Bit(1)
+  id_usuario_creacion Int
+  OFERTA              OFERTA[]
+}
+
+model CAT_TIPO_POLITICA {
+  id_tipo_politica    Int      @id
+  tipo_politica       String   @db.VarChar
+  id_usuario_creacion Int
+  fecha_creacion      DateTime @db.Date
+  id_estado_registro  String   @db.Bit(1)
+}
+
+model CAT_TIPO_PRODUCTO {
+  id_tipo_producto        Int        @id @default(autoincrement())
+  nombre                  String     @db.VarChar
+  fecha_creacion          DateTime   @db.Date
+  fecha_modificacion      DateTime   @db.Date
+  id_usuario_creacion     Int
+  id_usuario_modificacion Int
+  observacion             String?    @db.VarChar(255)
+  id_estado_registro      String?    @db.Bit(1)
+  PRODUCTO                PRODUCTO[]
+}
+
+model CAT_TIPO_RIESGO_ACTIVO {
+  id_tipo_riesgo_activo Int      @id
+  tipo_riesgo           String   @db.VarChar
+  id_usuario_creacion   Int
+  id_estado_registro    Int
+  fecha_creacion        DateTime @db.Date
+  nivel_riesgo          Int
+  ACTIVO                ACTIVO[]
+}
+
+model CLIENTE {
+  id_cliente              Int                      @id @default(autoincrement())
+  p_nombre                String                   @db.VarChar
+  s_nombre                String?                  @db.VarChar
+  p_apellido              String                   @db.VarChar
+  s_apellido              String?                  @db.VarChar
+  fecha_creacion          DateTime                 @db.Date
+  fecha_modificacion      DateTime                 @db.Date
+  id_usuario_creacion     Int
+  id_usuario_modificacion Int
+  contrasenia             String                   @db.VarChar
+  fecha_ultimo_acceso     DateTime                 @db.Date
+  id_sexo                 Int?
+  uui_d_cliente           String?                  @db.Uuid
+  correo                  String?                  @db.VarChar(255)
+  token_version           Int?
+  CAT_SEXO                CAT_SEXO?                @relation(fields: [id_sexo], references: [sexo_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cliente_sexo")
+  CLIENTE_IDENTIFICACION  CLIENTE_IDENTIFICACION[]
+  CLIENTE_PEDIDO          CLIENTE_PEDIDO[]
+  LOG_INGRESO_CLIENTE     LOG_INGRESO_CLIENTE[]
+  REFRESH_TOKEN_CLIENTE   REFRESH_TOKEN_CLIENTE[]
+  TELEFONO_CLIENTE        TELEFONO_CLIENTE[]
+}
+
+model CLIENTE_CONTACTO {
+  id_cliente_contacto     Int      @id
+  valor_contacto          String   @db.VarChar
+  id_tipo_contacto        Int
+  id_estado_registro      String   @db.Bit(1)
+  id_usuario_creacion     Int
+  fecha_creacion          DateTime @db.Date
+  id_cliente              Int
+  fecha_modificacion      DateTime @db.Date
+  id_usuario_modificacion Int
+  USUARIO                 USUARIO  @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model CLIENTE_DESCUENTO {
+  id_descuento        Int      @id
+  id_tipo_descuento   Int?
+  valor               Decimal  @db.Decimal
+  observacion         String?  @db.VarChar
+  id_usuario_creacion Int
+  fecha_creacion      DateTime @db.Date
+}
+
+model CLIENTE_IDENTIFICACION {
+  id_cliente_identificacion String             @id @db.VarChar
+  id_tipo_documento         Int
+  id_estado_registro        String             @db.Bit(1)
+  fecha_creacion            DateTime           @db.Date
+  id_usuario_creacion       Int
+  id_cliente                Int
+  id_usuario_modificacion   Int
+  fecha_modificacion        DateTime           @db.Date
+  CLIENTE                   CLIENTE            @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction)
+  CAT_TIPO_DOCUMENTO        CAT_TIPO_DOCUMENTO @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model CLIENTE_PEDIDO {
+  id_cliente_pedido      Int                      @id
+  cantidad_productos     Decimal                  @db.Decimal
+  id_cliente             Int
+  UID_PEDIDO             String                   @db.Uuid
+  id_estado_registro     String                   @db.Bit(1)
+  id_estado_pedido       Int
+  valor_total            Decimal                  @db.Decimal
+  id_usuario_creacion    Int
+  fecha_creacion         DateTime                 @db.Date
+  observacion            String                   @db.VarChar
+  CLIENTE                CLIENTE                  @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction)
+  CAT_ESTADO_PEDIDO      CAT_ESTADO_PEDIDO        @relation(fields: [id_estado_pedido], references: [id_estado_pedido], onDelete: NoAction, onUpdate: NoAction)
+  USUARIO                USUARIO                  @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cliente_pedido_usuario")
+  CLIENTE_PEDIDO_DETALLE CLIENTE_PEDIDO_DETALLE[]
+}
+
+model CLIENTE_PEDIDO_DETALLE {
+  id_pedido_detalle     Int            @id
+  p_producto_id         Int
+  id_descuento          Int?
+  cantidad              Decimal        @db.Decimal
+  cantidad_total_unidad Decimal        @db.Decimal
+  observacion           String?        @db.VarChar
+  id_cliente_pedido     Int
+  fecha_creacion        DateTime       @db.Date
+  id_usuario_creacion   Int
+  id_estado_registro    String         @db.Bit(1)
+  CLIENTE_PEDIDO        CLIENTE_PEDIDO @relation(fields: [id_cliente_pedido], references: [id_cliente_pedido], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedido_detalle_cliente_pedido")
+  PRODUCTO              PRODUCTO       @relation(fields: [p_producto_id], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_cliente_pedido_detalle")
+}
+
+model CONFIGURACION_GENERAL {
+  id_configuracion_general       Int                            @id
+  parametro_int_1                Int?
+  parametro_int_2                Int?
+  parametro_var_1                String?                        @db.VarChar
+  parametro_var_2                String?                        @db.VarChar
+  parametro_des_1                Decimal?                       @db.Decimal
+  parametro_des_2                Decimal?                       @db.Decimal
+  id_estado_registro             String                         @db.Bit(1)
+  id_usuario_creacion            Int
+  fecha_creacion                 DateTime                       @db.Date
+  id_usuario_modificacion        Int
+  fecha_modificacion             Int
+  id_tipo_configuracion_general  Int
+  id_empresa                     Int
+  EMPRESA                        EMPRESA                        @relation(fields: [id_empresa], references: [id_empresa], onDelete: NoAction, onUpdate: NoAction)
+  CAT_TIPO_CONFIGURACION_GENERAL CAT_TIPO_CONFIGURACION_GENERAL @relation(fields: [id_tipo_configuracion_general], references: [id_tipo_configuracion_general], onDelete: NoAction, onUpdate: NoAction, map: "fk_configura_general_tipo_configuracion_general")
+}
+
+model DIRECCION {
+  id_direccion            Int           @id @default(autoincrement())
+  id_municipio            Int
+  direccion_completa      String        @db.VarChar
+  no_casa                 String        @db.VarChar
+  no_calle                String        @db.VarChar
+  id_estado_registro      String        @db.Bit(1)
+  id_usuario_creacion     Int
+  id_usuario_modificacion Int
+  fecha_creacion          DateTime      @db.Date
+  fecha_modificacion      DateTime      @db.Date
+  CAT_MUNICIPIO           CAT_MUNICIPIO @relation(fields: [id_municipio], references: [id_municipio], onDelete: NoAction, onUpdate: NoAction, map: "fk_direccion_municipio")
+  EMPRESA                 EMPRESA[]
+  SUCURSAL                SUCURSAL[]
+}
+
+model EMPRESA {
+  id_empresa                    Int                     @id @default(autoincrement())
+  empresa                       String                  @db.VarChar
+  id_direccion                  Int
+  telefono                      Int
+  tamanio_contrasenia           Int
+  letras_mayus_contrasenia      Int
+  letras_especiales_contrasenia Int
+  numeros_contrasenia           Int
+  id_empresa_activa             String                  @db.Bit(1)
+  CONFIGURACION_GENERAL         CONFIGURACION_GENERAL[]
+  DIRECCION                     DIRECCION               @relation(fields: [id_direccion], references: [id_direccion], onDelete: NoAction, onUpdate: NoAction, map: "fk_empresa_direccion")
+  SUCURSAL                      SUCURSAL[]
+}
+
+model HISTORIAL_INCIDENTES {
+  id_historial_incidentes Int      @id
+  observaci_n             String?  @map("observación") @db.VarChar
+  id_tipo_incidiente      Int
+  id_usuario_creacion     Int
+  fecha_creacion          DateTime @db.Date
+  id_estado_registro      String   @db.Bit(1)
+  id_activo               Int
+  id_usuario_incidencia   Int?
+  id_politica_afectada    Int?
+  id_accion_correctiva    Int
+  accion_correctiva       String   @db.VarChar
+  USUARIO                 USUARIO? @relation(fields: [id_usuario_incidencia], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model LOG_INGRESO_CLIENTE {
+  id_log_ingreso_cliente Int      @id @default(autoincrement())
+  huella_digital         String   @db.VarChar
+  ip                     String   @db.VarChar
+  fecha                  DateTime @db.Date
+  id_cliente             Int
+  recuperar_contrasena   String   @db.Bit(1)
+  captcha                String   @db.VarChar
+  exitoso                Boolean?
+  codigorespuesta        Int?
+  CLIENTE                CLIENTE  @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model LOG_INGRESO_USUARIO {
+  id_log_ingreso_usuario Int            @id @default(autoincrement())
+  huella_digital         String         @db.VarChar
+  ip                     String         @db.Inet
+  fecha                  DateTime       @db.Timestamptz(6)
+  id_usuario             Int
+  recuperar_contrasena   String         @db.Bit(1)
+  captcha                String         @db.VarChar
+  exitoso                Boolean?
+  codigorespuesta        Int?
+  user_agent             String?
+  motivo_fallo           String?
+  ciudad                 String?
+  pais                   String?
+  huella_hash            String?
+  id_refresh_token       BigInt?
+  REFRESH_TOKEN          REFRESH_TOKEN? @relation(fields: [id_refresh_token], references: [id_refresh_token], onUpdate: NoAction)
+  USUARIO                USUARIO        @relation(fields: [id_usuario], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_log_ingreso_usuario_usuario")
+}
+
+model MANTENIMIENTO {
+  id_mantenimiento      Int                   @id
+  id_activo             Int
+  id_estado_registro    String                @db.Bit(1)
+  id_usuario_creacion   Int
+  fecha_creacion        DateTime              @db.Date
+  observacion           String                @db.VarChar
+  id_accion_correctiva  Int
+  CAT_ACCION_CORRECTIVA CAT_ACCION_CORRECTIVA @relation(fields: [id_accion_correctiva], references: [id_accion_correctiva], onDelete: NoAction, onUpdate: NoAction)
+  ACTIVO                ACTIVO                @relation(fields: [id_activo], references: [id_activo], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model MENU {
+  id_menu              Int      @id @default(autoincrement())
+  menu                 String   @db.VarChar
+  descripcion          String?  @db.VarChar
+  id_usuario_creacion  Int
+  fecha_creacion       DateTime @db.Date
+  id_estado_registro   String   @db.Bit(1)
+  id_modulo            Int
+  menu_protegido       String?  @db.Bit(1)
+  menu_visible_usuario String?  @db.Bit(1)
+  MODULO               MODULO   @relation(fields: [id_modulo], references: [id_modulo], onDelete: NoAction, onUpdate: NoAction, map: "fk_menu_modulo")
+  OPCION               OPCION[]
+}
+
+model MODULO {
+  id_modulo           Int      @id @default(autoincrement())
+  modulo              String   @db.VarChar
+  descripcion         String?  @db.VarChar
+  id_usuario_creacion Int
+  fecha_creacion      DateTime @db.Date
+  id_estado_registro  String   @db.Bit(1)
+  MENU                MENU[]
+}
+
+model MOVIMIENTO_INVENTARIO {
+  movimiento_inventario_Id Int                  @id @default(autoincrement())
+  p_producto_id            Int
+  id_estado_registro       String               @db.Bit(1)
+  cantidad_disponible      Int
+  fecha_creacion           DateTime             @db.Date
+  id_usuario_creacion      Int
+  valor_total_unitario     Decimal              @db.Decimal
+  cantidad_sale            Int
+  cantidad_entra           Int
+  id_tipo_movimiento       Int
+  id_razon_movimiento      Int
+  observacion              String?              @db.VarChar
+  USUARIO                  USUARIO              @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  CAT_RAZON_MOVIMIENTO     CAT_RAZON_MOVIMIENTO @relation(fields: [id_razon_movimiento], references: [id_razon_movimiento], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimiento_inventario_razon_movimiento")
+  CAT_TIPO_MOVIMIENTO      CAT_TIPO_MOVIMIENTO  @relation(fields: [id_tipo_movimiento], references: [id_tipo_movimiento], onDelete: NoAction, onUpdate: NoAction, map: "fk_movimiento_inventario_tipo_movimiento")
+  PRODUCTO                 PRODUCTO             @relation(fields: [p_producto_id], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_movimiento_inventario")
+}
+
+model OFERTA {
+  id_oferta               Int               @id @default(autoincrement())
+  valor_oferta_numerico   Decimal           @db.Decimal
+  valor_oferta_porcentaje Decimal?          @db.Decimal
+  fecha_creacion          DateTime          @db.Date
+  id_usuario_creacion     Int
+  id_estado_registro      String            @db.Bit(1)
+  id_tipo_oferta          Int
+  observacion             String?           @db.VarChar
+  oferta                  String?           @db.VarChar(250)
+  CAT_TIPO_OFERTA         CAT_TIPO_OFERTA   @relation(fields: [id_tipo_oferta], references: [id_tipo_oferta], onDelete: NoAction, onUpdate: NoAction)
+  PRODUCTO_OFERTA         PRODUCTO_OFERTA[]
+}
+
+model OPCION {
+  id_opcion           Int              @id @default(autoincrement())
+  opcion              String           @db.VarChar
+  descripcion         String?          @db.VarChar
+  id_usuario_creacion Int
+  fecha_creacion      DateTime         @db.Date
+  id_estado_registro  String           @db.Bit(1)
+  id_menu             Int
+  endpoint            String           @db.VarChar
+  MENU                MENU             @relation(fields: [id_menu], references: [id_menu], onDelete: NoAction, onUpdate: NoAction, map: "fk_opcion_menu")
+  ROLE_OPCION         ROLE_OPCION[]
+  USUARIO_OPCION      USUARIO_OPCION[]
+}
+
+model POLITICA {
+  id_politica         Int    @id
+  politica            String @db.VarChar
+  descripcion         String @db.VarChar
+  id_tipo_politica    Int
+  id_usuario_creacion Int
+  fecha_creacion      Int
+  id_estado_registro  String @db.Bit(1)
+}
+
+model PRODUCTO {
+  p_producto_Id           Int                      @id @default(autoincrement())
+  nombre_producto         String                   @db.VarChar
+  descripcion             String?                  @db.VarChar
+  fecha_creacion          DateTime                 @db.Date
+  fecha_modificacion      DateTime                 @db.Date
+  id_usuario_creacion     Int
+  id_usuario_modificacion Int
+  id_estado_registro      String                   @db.Bit(1)
+  id_estado_producto      Int
+  valor_unitario          Decimal                  @db.Decimal
+  valor_compra            Decimal                  @db.Decimal
+  id_proveedor            Int
+  id_tipo_producto        Int?
+  codigo                  String?                  @db.VarChar(150)
+  ACTIVO                  ACTIVO[]
+  CLIENTE_PEDIDO_DETALLE  CLIENTE_PEDIDO_DETALLE[]
+  LOG_PRODUCTO            LOG_PRODUCTO[]
+  MOVIMIENTO_INVENTARIO   MOVIMIENTO_INVENTARIO[]
+  CAT_ESTADO_PRODUCTO     CAT_ESTADO_PRODUCTO      @relation(fields: [id_estado_producto], references: [id_estado_producto], onDelete: NoAction, onUpdate: NoAction)
+  CAT_PROVEEDOR           CAT_PROVEEDOR            @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_cat_proveedor")
+  CAT_TIPO_PRODUCTO       CAT_TIPO_PRODUCTO?       @relation(fields: [id_tipo_producto], references: [id_tipo_producto], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_tipo_producto")
+  PRODUCTO_OFERTA         PRODUCTO_OFERTA[]
+}
+
+model ROLE {
+  id_role             Int            @id @default(autoincrement())
+  role                String         @db.VarChar
+  id_usuario_creacion Int
+  fecha_creacion      DateTime       @db.Date
+  id_estado_registro  String         @db.Bit(1)
+  descripcion         String         @db.VarChar
+  ROLE_OPCION         ROLE_OPCION[]
+  ROLE_USUARIO        ROLE_USUARIO[]
+}
+
+model ROLE_OPCION {
+  id_role_opcion      Int      @id @default(autoincrement())
+  id_role             Int
+  id_opcion           Int
+  id_estado_registro  String   @db.Bit(1)
+  id_usuario_creacion Int
+  fecha_creacion      DateTime @db.Date
+  actualizar          String   @db.Bit(1)
+  insertar            String   @db.Bit(1)
+  eliminar            String   @db.Bit(1)
+  leer                String   @db.Bit(1)
+  OPCION              OPCION   @relation(fields: [id_opcion], references: [id_opcion], onDelete: NoAction, onUpdate: NoAction)
+  ROLE                ROLE     @relation(fields: [id_role], references: [id_role], onDelete: NoAction, onUpdate: NoAction, map: "fk_contraint_role_opcion_role")
+}
+
+model ROLE_USUARIO {
+  id_role_usuario     Int      @id
+  id_role             Int
+  fecha_creacion      DateTime @db.Date
+  id_usuario_creacion Int
+  id_estado_registro  String   @db.Bit(1)
+  id_usuario          Int?
+  ROLE                ROLE     @relation(fields: [id_role], references: [id_role], onDelete: NoAction, onUpdate: NoAction, map: "fk_contraint_role_usuario_role")
+  USUARIO             USUARIO? @relation(fields: [id_usuario], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_role_usuario_usuario")
+}
+
+model SUCURSAL {
+  id_sucursal          Int                 @id @default(autoincrement())
+  sucursal             String              @db.VarChar
+  id_direccion         Int
+  telefono             Int
+  id_usuario_encargado Int?
+  id_estado_sucursal   Int
+  id_usuario_creacion  Int
+  fecha_creacion       DateTime            @db.Date
+  id_empresa           Int
+  CAT_ESTADO_SUCURSAL  CAT_ESTADO_SUCURSAL @relation(fields: [id_estado_sucursal], references: [id_estado_sucursal], onDelete: NoAction, onUpdate: NoAction, map: "fk_sucursal_cat_estado_sucursal")
+  DIRECCION            DIRECCION           @relation(fields: [id_direccion], references: [id_direccion], onDelete: NoAction, onUpdate: NoAction, map: "fk_sucursal_direccion")
+  EMPRESA              EMPRESA             @relation(fields: [id_empresa], references: [id_empresa], onDelete: NoAction, onUpdate: NoAction, map: "fk_sucursal_empresa")
+  USUARIO              USUARIO[]
+}
+
+model TELEFONO_CLIENTE {
+  telefono            Int
+  id_empresa          Int?
+  fecha_creacion      DateTime            @db.Date
+  id_usuario_creacion Int
+  id_estado_registro  String              @db.Bit(1)
+  id_estado_telefono  Int
+  id_cliente          Int
+  id_telefono_cliente Int                 @id(map: "pk_telefono_cliente") @default(autoincrement())
+  CLIENTE             CLIENTE             @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction)
+  CAT_ESTADO_TELEFONO CAT_ESTADO_TELEFONO @relation(fields: [id_estado_telefono], references: [id_estado_telefono], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([telefono, id_empresa], map: "TELEFONO_CLIENTE_index_0")
+}
+
+model TELEFONO_USUARIO {
+  telefono            Int                 @id(map: "pk_telefono_usuario")
+  fecha_creacion      DateTime            @db.Date
+  id_usuario_creacion Int
+  id_estado_registro  String              @db.Bit(1)
+  id_estado_telefono  Int
+  id_usuario          Int
+  USUARIO             USUARIO             @relation(fields: [id_usuario], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  CAT_ESTADO_TELEFONO CAT_ESTADO_TELEFONO @relation(fields: [id_estado_telefono], references: [id_estado_telefono], onDelete: NoAction, onUpdate: NoAction, map: "fk_telefono_usuario_cat_estado_telefono")
+}
+
+model USUARIO {
+  usuario_id                                             Int                          @id @default(autoincrement())
+  p_nombre                                               String                       @db.VarChar
+  s_nombre                                               String                       @db.VarChar
+  p_apellido                                             String                       @db.VarChar
+  s_apellido                                             String                       @db.VarChar
+  fecha_creacion                                         DateTime                     @db.Date
+  fecha_modificacion                                     DateTime                     @db.Date
+  usuario_creacion                                       String                       @db.VarChar
+  usuario_modificacion                                   String                       @db.VarChar
+  id_sexo                                                Int
+  id_estado_registro                                     String                       @db.Bit(1)
+  id_direccion                                           Int
+  fecha_nacimiento                                       DateTime                     @db.Date
+  contrasenia                                            String                       @db.VarChar
+  intentos_ingreso                                       Int
+  id_estado_usuario                                      Int
+  id_sucursal                                            Int
+  fecha_ultimo_acceso                                    DateTime                     @db.Date
+  uuid_usuario                                           String?                      @unique(map: "uq_usuario_uuid") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  correo_principal                                       String?                      @unique(map: "uq_usuario_correo") @db.Citext
+  codigo_usuario                                         String?                      @unique(map: "uq_usuario_codigo") @db.VarChar(155)
+  token_version                                          Int                          @default(0)
+  bloqueado_hasta                                        DateTime?                    @db.Timestamptz(6)
+  ACTIVO                                                 ACTIVO[]
+  ACTIVO_ACTIVO_id_usuario_aplica_mantenimientoToUSUARIO ACTIVO[]                     @relation("ACTIVO_id_usuario_aplica_mantenimientoToUSUARIO")
+  CLIENTE_CONTACTO                                       CLIENTE_CONTACTO[]
+  CLIENTE_PEDIDO                                         CLIENTE_PEDIDO[]
+  HISTORIAL_INCIDENTES                                   HISTORIAL_INCIDENTES[]
+  LOG_INGRESO_USUARIO                                    LOG_INGRESO_USUARIO[]
+  MOVIMIENTO_INVENTARIO                                  MOVIMIENTO_INVENTARIO[]
+  PRODUCTO_OFERTA                                        PRODUCTO_OFERTA[]
+  REFRESH_TOKEN                                          REFRESH_TOKEN[]
+  ROLE_USUARIO                                           ROLE_USUARIO[]
+  TELEFONO_USUARIO                                       TELEFONO_USUARIO[]
+  CAT_ESTADO_USUARIO                                     CAT_ESTADO_USUARIO           @relation(fields: [id_estado_usuario], references: [id_estado_usuario], onDelete: NoAction, onUpdate: NoAction)
+  SUCURSAL                                               SUCURSAL                     @relation(fields: [id_sucursal], references: [id_sucursal], onDelete: NoAction, onUpdate: NoAction)
+  CAT_SEXO                                               CAT_SEXO                     @relation(fields: [id_sexo], references: [sexo_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuario_cat_sexo")
+  USUARIO_CONTACTO                                       USUARIO_CONTACTO[]
+  USUARIO_IDENTIFICACION                                 USUARIO_IDENTIFICACION[]
+  USUARIO_OPCION                                         USUARIO_OPCION[]
+  USUARIO_PREGUNTA_SEGURIDAD                             USUARIO_PREGUNTA_SEGURIDAD[]
+}
+
+model USUARIO_CONTACTO {
+  id_usuario_contacto Int               @id
+  valor_contacto      String            @db.VarChar
+  id_tipo_contacto    Int
+  id_estado_registro  String            @db.Bit(1)
+  id_usuario_creacion Int
+  fecha_creacion      DateTime          @db.Date
+  id_usuario          Int
+  CAT_TIPO_CONTACTO   CAT_TIPO_CONTACTO @relation(fields: [id_tipo_contacto], references: [id_tipo_parametro_general], onDelete: NoAction, onUpdate: NoAction)
+  USUARIO             USUARIO           @relation(fields: [id_usuario], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model USUARIO_IDENTIFICACION {
+  id_usuario_identificacion String             @id @db.VarChar
+  id_tipo_documento         Int
+  id_estado_registro        String             @db.Bit(1)
+  fecha_creacion            DateTime           @db.Date
+  id_usuario_creacion       Int
+  id_usuario                Int
+  id_usuario_modificacion   Int
+  fecha_modificacion        DateTime           @db.Date
+  USUARIO                   USUARIO            @relation(fields: [id_usuario], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  CAT_TIPO_DOCUMENTO        CAT_TIPO_DOCUMENTO @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuario_identificacion_tipo_documento")
+}
+
+model USUARIO_PREGUNTA_SEGURIDAD {
+  id_pregunta_seguridad Int      @id
+  id_usuario            Int
+  fecha_creacion        DateTime @db.Date
+  id_estado_registro    Int
+  pregunta              String   @db.VarChar
+  respuesta             String   @db.VarChar
+  USUARIO               USUARIO  @relation(fields: [id_usuario], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuario_pregunta_seguridad_usuario")
+}
+
+model USUARIO_OPCION {
+  id_usuario_role     Int      @id(map: "USUARIO_ROLE_pkey")
+  id_usuario          Int
+  id_opcion           Int
+  id_usuario_creacion Int
+  fecha_creacion      DateTime @db.Date
+  id_estado_registro  String   @db.Bit(1)
+  actualizar          String   @db.Bit(1)
+  insertar            String   @db.Bit(1)
+  eliminar            String   @db.Bit(1)
+  leer                String   @db.Bit(1)
+  OPCION              OPCION   @relation(fields: [id_opcion], references: [id_opcion], onDelete: NoAction, onUpdate: NoAction, map: "USUARIO_ROLE_id_opcion_fkey")
+  USUARIO             USUARIO  @relation(fields: [id_usuario], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuario_opcion_usuario")
+}
+
+model REFRESH_TOKEN {
+  id_refresh_token        BigInt                @id @default(autoincrement())
+  id_usuario              Int
+  token_hash              String                @unique(map: "uq_refresh_token_hash")
+  family_id               String                @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  session_label           String?
+  created_at              DateTime              @default(now()) @db.Timestamptz(6)
+  last_used_at            DateTime?             @db.Timestamptz(6)
+  expires_at              DateTime              @db.Timestamptz(6)
+  revoked_at              DateTime?             @db.Timestamptz(6)
+  revoked_reason          String?
+  replaced_by             BigInt?
+  ip                      String?               @db.Inet
+  user_agent              String?
+  device_fingerprint_hash String?
+  LOG_INGRESO_USUARIO     LOG_INGRESO_USUARIO[]
+  USUARIO                 USUARIO               @relation(fields: [id_usuario], references: [usuario_id], onDelete: Cascade, onUpdate: NoAction)
+  REFRESH_TOKEN           REFRESH_TOKEN?        @relation("REFRESH_TOKENToREFRESH_TOKEN", fields: [replaced_by], references: [id_refresh_token], onDelete: NoAction, onUpdate: NoAction)
+  other_REFRESH_TOKEN     REFRESH_TOKEN[]       @relation("REFRESH_TOKENToREFRESH_TOKEN")
+
+  @@index([expires_at], map: "idx_refresh_expires")
+  @@index([family_id], map: "idx_refresh_family")
+  @@index([id_usuario], map: "idx_refresh_user")
+}
+
+model REFRESH_TOKEN_CLIENTE {
+  id_refresh_token            BigInt                  @id @default(autoincrement())
+  id_cliente                  Int
+  token_hash                  String                  @unique(map: "uq_refresh_token_hash_cliente")
+  family_id                   String                  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  session_label               String?
+  created_at                  DateTime                @default(now()) @db.Timestamptz(6)
+  last_used_at                DateTime?               @db.Timestamptz(6)
+  expires_at                  DateTime                @db.Timestamptz(6)
+  revoked_at                  DateTime?               @db.Timestamptz(6)
+  revoked_reason              String?
+  replaced_by                 BigInt?
+  ip                          String?                 @db.Inet
+  user_agent                  String?
+  device_fingerprint_hash     String?
+  CLIENTE                     CLIENTE                 @relation(fields: [id_cliente], references: [id_cliente], onDelete: Cascade, onUpdate: NoAction)
+  REFRESH_TOKEN_CLIENTE       REFRESH_TOKEN_CLIENTE?  @relation("REFRESH_TOKEN_CLIENTEToREFRESH_TOKEN_CLIENTE", fields: [replaced_by], references: [id_refresh_token], onDelete: NoAction, onUpdate: NoAction)
+  other_REFRESH_TOKEN_CLIENTE REFRESH_TOKEN_CLIENTE[] @relation("REFRESH_TOKEN_CLIENTEToREFRESH_TOKEN_CLIENTE")
+}
+
+model LOG_PRODUCTO {
+  id_log_producto     Int       @id @default(autoincrement())
+  p_producto_id       Int
+  id_estado_producto  Int
+  id_proveedor        Int
+  nombre_producto     String    @db.VarChar(150)
+  valor_compra        Decimal   @db.Decimal(12, 2)
+  valor_unitario      Decimal   @db.Decimal(12, 2)
+  fecha_creacion      DateTime? @default(now()) @db.Timestamp(6)
+  id_usuario_creacion Int?
+  tipo_accion         String    @db.VarChar(10)
+  PRODUCTO            PRODUCTO  @relation(fields: [p_producto_id], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto")
+}
+
+model PRODUCTO_OFERTA {
+  id_producto_oferta  Int      @id(map: "PRODUCTO_VALOR_FINAL_pkey") @default(autoincrement())
+  p_producto_id       Int
+  id_estado_registro  String   @db.Bit(1)
+  fecha_creacion      DateTime @db.Date
+  id_usuario_creacion Int
+  id_oferta           Int?
+  USUARIO             USUARIO  @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "PRODUCTO_VALOR_FINAL_id_usuario_creacion_fkey")
+  OFERTA              OFERTA?  @relation(fields: [id_oferta], references: [id_oferta], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_oferta_oferta")
+  PRODUCTO            PRODUCTO @relation(fields: [p_producto_id], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_oferta_producto")
+}
