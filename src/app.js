@@ -11,9 +11,9 @@ const cargaInicialRoutes = require("./routes/cargaInicial.routes");
 const inventarioRoutes = require("./routes/Inventario.routes");
 
 const app = express();
-
 const prisma = new PrismaClient();
 
+// CORS
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
   : [];
@@ -34,8 +34,10 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// Proxy de Render
 app.set("trust proxy", 1);
 
+// Rate limit
 const maxPeticiones = process.env.INDEFINIDOPETICIONES
   ? parseInt(process.env.INDEFINIDOPETICIONES)
   : 25;
@@ -51,6 +53,7 @@ app.use("/api/perfil", perfilRoutes);
 app.use("/api/v1/cargaInicial", cargaInicialRoutes);
 app.use("/api/v1/inventario", inventarioRoutes);
 
+// Ruta de prueba
 app.get("/", async (req, res) => {
   try {
     const usuarios = await prisma.uSUARIO.findMany({ take: 5 });
@@ -65,8 +68,8 @@ app.get("/", async (req, res) => {
   }
 });
 
+// Levantar servidor directamente
 const PORT = process.env.PORT || 10000;
-
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
   console.log(
