@@ -621,7 +621,7 @@ model ROLE_OPCION {
 }
 
 model ROLE_USUARIO {
-  id_role_usuario     Int      @id
+  id_role_usuario     Int      @id @default(autoincrement())
   id_role             Int
   fecha_creacion      DateTime @db.Date
   id_usuario_creacion Int
@@ -693,7 +693,7 @@ model USUARIO {
   id_sucursal                                            Int
   fecha_ultimo_acceso                                    DateTime                     @db.Date
   uuid_usuario                                           String?                      @unique(map: "uq_usuario_uuid") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  correo_principal                                       String?                      @unique(map: "uq_usuario_correo") @db.Citext
+  correo_principal                                       String?                      @unique(map: "uq_usuario_correo") @db.VarChar(255)
   codigo_usuario                                         String?                      @unique(map: "uq_usuario_codigo") @db.VarChar(155)
   token_version                                          Int                          @default(0)
   bloqueado_hasta                                        DateTime?                    @db.Timestamptz(6)

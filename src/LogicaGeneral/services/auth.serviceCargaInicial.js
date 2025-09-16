@@ -26,14 +26,14 @@ async function rutasPermitidasEmpleado(esEmpleado, req, res) {
   const opcionesPermitidas = rutas.map((ruta) => ruta.OPCION);
   const rutasFormateadas = opcionesPermitidas.map((opcion) => {
     return {
-      path: opcion.endpoint, 
-      name: opcion.opcion, 
+      path: opcion.endpoint,
+      name: opcion.opcion,
       meta: {
         group: opcion.MENU.menu,
-        title: opcion.opcion, 
-        icon: "Home", 
+        title: opcion.opcion,
+        icon: "Home",
         requiresAuth: true,
-        allowed: true, 
+        allowed: true,
       },
     };
   });
