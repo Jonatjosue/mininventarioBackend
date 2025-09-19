@@ -32,6 +32,9 @@ const {
   crearOferta,
   actualizarOferta,
   eliminarOferta,
+  agregarOfertaProducto,
+  ofertasProducto,
+  borrarProductoOferta,
 } = require("../inventario/controller/inventario.oferta.controller");
 
 router.get("/ObtenerProveedores", verificarToken, obtenerProveedores);
@@ -82,5 +85,12 @@ router.get("/obtenerProductos", verificarToken, obtenerProductos);
 router.post("/crearProducto", verificarToken, crearProducto);
 router.post("/actualizarProducto", verificarToken, actualizarProducto);
 router.delete("/borrarProducto/:p_producto_Id", verificarToken, borrarProducto);
+router.post("/agregarOfertaProducto", verificarToken, agregarOfertaProducto);
+router.get("/ofertasProducto", verificarToken, ofertasProducto);
+router.delete(
+  "/borrarProductoOferta/:id_producto_oferta",
+  verificarToken,
+  borrarProductoOferta
+);
 
 module.exports = router;

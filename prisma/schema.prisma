@@ -158,6 +158,7 @@ model CAT_PROVEEDOR {
   puesto_de_contacto      String?    @db.VarChar(155)
   nombre_contacto         String?    @db.VarChar(155)
   notas                   String?    @db.VarChar(355)
+  FACTURA                 FACTURA[]
   PRODUCTO                PRODUCTO[]
 }
 
@@ -586,6 +587,7 @@ model PRODUCTO {
   codigo                  String?                  @db.VarChar(150)
   ACTIVO                  ACTIVO[]
   CLIENTE_PEDIDO_DETALLE  CLIENTE_PEDIDO_DETALLE[]
+  DETALLE_FACTURA         DETALLE_FACTURA[]
   LOG_PRODUCTO            LOG_PRODUCTO[]
   MOVIMIENTO_INVENTARIO   MOVIMIENTO_INVENTARIO[]
   CAT_ESTADO_PRODUCTO     CAT_ESTADO_PRODUCTO      @relation(fields: [id_estado_producto], references: [id_estado_producto], onDelete: NoAction, onUpdate: NoAction)
@@ -827,13 +829,72 @@ model LOG_PRODUCTO {
 }
 
 model PRODUCTO_OFERTA {
-  id_producto_oferta  Int      @id(map: "PRODUCTO_VALOR_FINAL_pkey") @default(autoincrement())
+  id_producto_oferta      Int       @id(map: "PRODUCTO_VALOR_FINAL_pkey") @default(autoincrement())
+  p_producto_id           Int
+  id_estado_registro      String    @db.Bit(1)
+  fecha_creacion          DateTime  @db.Date
+  id_usuario_creacion     Int
+  id_oferta               Int?
+  fecha_vigencia          DateTime? @db.Date
+  aplica_por_porcentaje   Boolean?
+  id_usuario_modificacion Int?
+  fecha_modificacion      DateTime? @db.Date
+  USUARIO                 USUARIO   @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "PRODUCTO_VALOR_FINAL_id_usuario_creacion_fkey")
+  OFERTA                  OFERTA?   @relation(fields: [id_oferta], references: [id_oferta], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_oferta_oferta")
+  PRODUCTO                PRODUCTO  @relation(fields: [p_producto_id], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_oferta_producto")
+}
+
+model CAT_ESTADO_FACTURA {
+  id_estado_factura   Int       @id @default(autoincrement())
+  estado              String    @db.VarChar(255)
+  fecha_creacion      DateTime? @default(now()) @db.Timestamp(6)
+  id_usuario_creacion Int?
+  FACTURA             FACTURA[]
+}
+
+model CAT_TIPO_PAGO {
+  id_tipo_pago        Int       @id @default(autoincrement())
+  descripcion_pago    String    @db.VarChar(255)
+  fecha_creacion      DateTime? @default(now()) @db.Timestamp(6)
+  id_usuario_creacion Int?
+  FACTURA             FACTURA[]
+}
+
+model DETALLE_FACTURA {
+  id_detalle_factura  Int       @id @default(autoincrement())
+  id_factura          Int
   p_producto_id       Int
-  id_estado_registro  String   @db.Bit(1)
-  fecha_creacion      DateTime @db.Date
   id_usuario_creacion Int
-  id_oferta           Int?
-  USUARIO             USUARIO  @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "PRODUCTO_VALOR_FINAL_id_usuario_creacion_fkey")
-  OFERTA              OFERTA?  @relation(fields: [id_oferta], references: [id_oferta], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_oferta_oferta")
-  PRODUCTO            PRODUCTO @relation(fields: [p_producto_id], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_oferta_producto")
+  fecha_creacion      DateTime? @default(now()) @db.Timestamp(6)
+  cantidad            Decimal   @db.Decimal(18, 2)
+  precio_unitario     Decimal   @db.Decimal(18, 2)
+  descuento           Decimal?  @default(0) @db.Decimal(18, 2)
+  subtotal            Decimal?  @default(0) @db.Decimal(18, 2)
+  impuestos           Decimal?  @default(0) @db.Decimal(18, 2)
+  total               Decimal?  @default(0) @db.Decimal(18, 2)
+  es_lote             Boolean?  @default(false)
+  precio_lote         Decimal?  @db.Decimal(18, 2)
+  FACTURA             FACTURA   @relation(fields: [id_factura], references: [id_factura], onDelete: Cascade, onUpdate: NoAction, map: "fk_detalle_factura")
+  PRODUCTO            PRODUCTO  @relation(fields: [p_producto_id], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detalle_producto")
+}
+
+model FACTURA {
+  id_factura              Int                @id @default(autoincrement())
+  id_proveedor            Int
+  numero_factura          String             @db.VarChar(150)
+  serie_factura           String?            @db.VarChar(150)
+  fecha_emision           DateTime           @db.Date
+  fecha_vencimiento       DateTime?          @db.Date
+  id_usuario_creacion     Int
+  id_usuario_modificacion Int?
+  fecha_modificacion      DateTime?          @db.Timestamp(6)
+  id_tipo_pago            Int
+  id_estado_factura       Int
+  subtotal                Decimal?           @default(0) @db.Decimal(18, 2)
+  impuestos               Decimal?           @default(0) @db.Decimal(18, 2)
+  total                   Decimal?           @default(0) @db.Decimal(18, 2)
+  DETALLE_FACTURA         DETALLE_FACTURA[]
+  CAT_ESTADO_FACTURA      CAT_ESTADO_FACTURA @relation(fields: [id_estado_factura], references: [id_estado_factura], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_estado")
+  CAT_PROVEEDOR           CAT_PROVEEDOR      @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_proveedor")
+  CAT_TIPO_PAGO           CAT_TIPO_PAGO      @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_tipo_pago")
 }

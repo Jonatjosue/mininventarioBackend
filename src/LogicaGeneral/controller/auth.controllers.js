@@ -160,10 +160,10 @@ async function login(req, res) {
     }
 
     res.cookie("refreshToken", valoresCredenciales.rawRefreshToken, {
-      httpOnly: true, 
-      secure: process.env.NODE_ENV === "produccion", // Solo HTTPS para producción
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Solo HTTPS para producción
       sameSite: "Strict", // No se envía a otros dominios
-      maxAge: 24 * 60 * 60 * 1000, // 1 día en ms
+      maxAge: 1 * 60 * 60 * 1000, // 1 día en ms
     });
 
     return res.json({
@@ -184,7 +184,7 @@ async function login(req, res) {
 }
 function makeTokenId(rawRefreshToken) {
   return crypto
-    .createHmac("sha256", process.env.REFRESH_TOKEN_SECRET) 
+    .createHmac("sha256", process.env.REFRESH_TOKEN_SECRET)
     .update(rawRefreshToken)
     .digest("base64url");
 }
@@ -204,7 +204,7 @@ async function guardarTokenRefresh(
         id_usuario: user.usuario_id,
         token_hash: tokenHash,
         family_id: familyId,
-        expires_at: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), 
+        expires_at: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
         ip,
         user_agent: userAgent,
         device_fingerprint_hash: fingerprint || null,
@@ -289,7 +289,7 @@ async function logIngresoCliente(
       ip: ip,
       recuperar_contrasena: recuperar_contrasena,
       exitoso: exitoso,
-      codigorespuesta: codigorespuesta, 
+      codigorespuesta: codigorespuesta,
     },
   });
 }
@@ -398,14 +398,20 @@ async function registro(req, res) {
       token.family_id
     );
 
-    res.status(201).json({
+    res.cookie("refreshToken", token.rawRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict", // No se envía a otros dominios
+      maxAge: 1 * 60 * 60 * 1000, // 1 día en ms
+    });
+    return res.status(201).json({
       mensaje: "Usuario creado exitosamente",
       googleSignUp: false,
       usuario: nuevoCliente.correo,
       accessToken: token.accesToken,
     });
   } catch (err) {
-    res
+    return res
       .status(500)
       .json({ error: "Error al crear el usuario", details: err.message });
   }
@@ -510,7 +516,7 @@ async function refreshCliente(tokenHash, res, req) {
 async function refreshUsuario(tokenHash, res, req) {
   const tokenDB = await prisma.rEFRESH_TOKEN.findUnique({
     where: { token_hash: tokenHash, AND: { revoked_at: null } },
-    include: { USUARIO: true }, 
+    include: { USUARIO: true },
   });
   if (!tokenDB) {
     return res.status(401).json({ error: "Refresh token inválido" });
@@ -538,7 +544,7 @@ async function refreshUsuario(tokenHash, res, req) {
     data: {
       id_usuario: user.usuario_id,
       token_hash: newTokenHash,
-      family_id: tokenDB.family_id, 
+      family_id: tokenDB.family_id,
       expires_at: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1 días
       ip: req.ip,
       user_agent: req.headers["user-agent"],
@@ -580,7 +586,7 @@ async function logout(req, res) {
       await logoutcliente(req.user, tokenHash);
     }
   } catch (error) {
-    console.error('Error al logout', error);
+    console.error("Error al logout", error);
     return res.status(500).json({ error: "Error en el servidor" });
   }
 
