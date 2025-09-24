@@ -37,6 +37,15 @@ const {
   borrarProductoOferta,
 } = require("../inventario/controller/inventario.oferta.controller");
 
+const {
+  obtenerEstadosFactura,
+  obtenerTiposPago,
+  obtenerProductosPorProveedor,
+  obtenerMovimientosInventario,
+  agregarMovimientoProducto,
+  borrarFacturayDetalle
+} = require("../inventario/controller/inventario.movimiento.controller");
+
 router.get("/ObtenerProveedores", verificarToken, obtenerProveedores);
 router.post("/AgregarProveedor", verificarToken, AgregarProveedor);
 router.delete(
@@ -91,6 +100,28 @@ router.delete(
   "/borrarProductoOferta/:id_producto_oferta",
   verificarToken,
   borrarProductoOferta
+);
+router.get("/obtenerEstadosFactura", verificarToken, obtenerEstadosFactura);
+router.get("/obtenerTiposPago", verificarToken, obtenerTiposPago);
+router.get(
+  "/obtenerProductosPorProveedor",
+  verificarToken,
+  obtenerProductosPorProveedor
+);
+router.get(
+  "/obtenerMovimientosInventario",
+  verificarToken,
+  obtenerMovimientosInventario
+);
+router.post(
+  "/agregarMovimientoProducto",
+  verificarToken,
+  agregarMovimientoProducto
+);
+router.delete(
+  "/borrarFacturayDetalle/:id_factura",
+  verificarToken,
+  borrarFacturayDetalle
 );
 
 module.exports = router;

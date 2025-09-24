@@ -28,7 +28,7 @@ model ACTIVO {
 }
 
 model BITACORA_BORRADO_INTERNO {
-  id_bitacora                  Int      @id
+  id_bitacora                  Int      @id @default(autoincrement())
   entidad_modificada           String   @db.VarChar
   fecha_modificacion           String   @db.VarChar
   id_entidad_modificada        Int
@@ -72,7 +72,7 @@ model CAT_DEPARTAMENTO {
 }
 
 model CAT_ESTADO_PEDIDO {
-  id_estado_pedido       Int              @id
+  id_estado_pedido       Int              @id @default(autoincrement())
   estado_pedido          String           @db.VarChar
   fecha_creacion         DateTime         @db.Date
   id_estado_registro     String           @db.Bit(1)
@@ -348,24 +348,26 @@ model CLIENTE_IDENTIFICACION {
 }
 
 model CLIENTE_PEDIDO {
-  id_cliente_pedido      Int                      @id
-  cantidad_productos     Decimal                  @db.Decimal
-  id_cliente             Int
-  UID_PEDIDO             String                   @db.Uuid
-  id_estado_registro     String                   @db.Bit(1)
-  id_estado_pedido       Int
-  valor_total            Decimal                  @db.Decimal
-  id_usuario_creacion    Int
-  fecha_creacion         DateTime                 @db.Date
-  observacion            String                   @db.VarChar
-  CLIENTE                CLIENTE                  @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction)
-  CAT_ESTADO_PEDIDO      CAT_ESTADO_PEDIDO        @relation(fields: [id_estado_pedido], references: [id_estado_pedido], onDelete: NoAction, onUpdate: NoAction)
-  USUARIO                USUARIO                  @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cliente_pedido_usuario")
-  CLIENTE_PEDIDO_DETALLE CLIENTE_PEDIDO_DETALLE[]
+  id_cliente_pedido       Int                      @id @default(autoincrement())
+  cantidad_productos      Decimal                  @db.Decimal
+  id_cliente              Int
+  UID_PEDIDO              String                   @db.Uuid
+  id_estado_registro      String                   @db.Bit(1)
+  id_estado_pedido        Int
+  valor_total             Decimal                  @db.Decimal
+  id_usuario_creacion     Int
+  fecha_creacion          DateTime                 @db.Date
+  observacion             String                   @db.VarChar
+  fecha_modificacion      DateTime?                @db.Date
+  id_usuario_modificacion Int?
+  CLIENTE                 CLIENTE                  @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction)
+  CAT_ESTADO_PEDIDO       CAT_ESTADO_PEDIDO        @relation(fields: [id_estado_pedido], references: [id_estado_pedido], onDelete: NoAction, onUpdate: NoAction)
+  USUARIO                 USUARIO                  @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cliente_pedido_usuario")
+  CLIENTE_PEDIDO_DETALLE  CLIENTE_PEDIDO_DETALLE[]
 }
 
 model CLIENTE_PEDIDO_DETALLE {
-  id_pedido_detalle     Int            @id
+  id_pedido_detalle     Int            @id @default(autoincrement())
   p_producto_id         Int
   id_descuento          Int?
   cantidad              Decimal        @db.Decimal
@@ -585,6 +587,7 @@ model PRODUCTO {
   id_proveedor            Int
   id_tipo_producto        Int?
   codigo                  String?                  @db.VarChar(150)
+  publicado               Boolean?
   ACTIVO                  ACTIVO[]
   CLIENTE_PEDIDO_DETALLE  CLIENTE_PEDIDO_DETALLE[]
   DETALLE_FACTURA         DETALLE_FACTURA[]

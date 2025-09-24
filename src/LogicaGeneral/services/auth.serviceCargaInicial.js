@@ -97,8 +97,22 @@ async function rutasPermitidasCliente(esEmpleado, req, res) {
       },
     },
   });
+
   const opcionesPermitidas = rutas.map((ruta) => ruta.OPCION);
-  return res.status(200).json({ rutasPermitidas: opcionesPermitidas });
+  const rutasFormateadas = opcionesPermitidas.map((opcion) => {
+    return {
+      path: opcion.endpoint,
+      name: opcion.opcion,
+      meta: {
+        group: opcion.MENU.menu,
+        title: opcion.opcion,
+        icon: "Home",
+        requiresAuth: true,
+        allowed: true,
+      },
+    };
+  });
+  return res.status(200).json({ rutasPermitidas: rutasFormateadas });
 }
 
 module.exports = { rutasPermitidasEmpleado, rutasPermitidasCliente };

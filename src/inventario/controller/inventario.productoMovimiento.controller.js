@@ -21,6 +21,7 @@ async function obtenerEstadosProducto(req, res) {
 
 async function obtenerProductos(req, res) {
   try {
+    const productosFormateados = [];
     const productos = await prisma.pRODUCTO.findMany({
       where: {
         id_estado_registro: "1",
@@ -32,6 +33,7 @@ async function obtenerProductos(req, res) {
         valor_unitario: true,
         fecha_creacion: true,
         codigo: true,
+        publicado: true,
         descripcion: true,
         id_estado_producto: true,
         id_tipo_producto: true,
@@ -54,23 +56,33 @@ async function obtenerProductos(req, res) {
       },
     });
 
-    const formtateadoProductos = productos.map((a) => ({
-      p_producto_Id: a.p_producto_Id,
-      nombre: a.nombre_producto,
-      precioCompra: a.valor_compra,
-      precioVenta: a.valor_unitario,
-      id_estado_producto: a.id_estado_producto,
-      id_tipo_producto: a.id_tipo_producto,
-      id_proveedor: a.id_proveedor,
-      nombre_estado: a.CAT_ESTADO_PRODUCTO.nombre_estado,
-      stock: a.MOVIMIENTO_INVENTARIO?.cantidad_disponible || 0,
-      codigo: a.codigo ?? "",
-      proveedor: a.CAT_PROVEEDOR?.nombre_proveedor || "Sin proveedor",
-      categoria: a.CAT_TIPO_PRODUCTO?.nombre || "Sin tipo",
-      descripcion: a.descripcion,
-    }));
+    for (const a of productos) {
+      const stockProducto = await prisma.mOVIMIENTO_INVENTARIO.findFirst({
+        where: { p_producto_id: a.p_producto_Id },
+        orderBy: { movimiento_inventario_Id: "desc" },
+      });
 
-    return res.status(200).json({ productos: formtateadoProductos });
+      const producto = {
+        p_producto_Id: a.p_producto_Id,
+        nombre: a.nombre_producto,
+        precioCompra: a.valor_compra,
+        publicado: a.publicado || false,
+        precioVenta: a.valor_unitario,
+        id_estado_producto: a.id_estado_producto,
+        id_tipo_producto: a.id_tipo_producto,
+        id_proveedor: a.id_proveedor,
+        nombre_estado: a.CAT_ESTADO_PRODUCTO?.nombre_estado || "",
+        stock: stockProducto?.cantidad_disponible || 0,
+        codigo: a.codigo ?? "",
+        proveedor: a.CAT_PROVEEDOR?.nombre_proveedor || "Sin proveedor",
+        categoria: a.CAT_TIPO_PRODUCTO?.nombre || "Sin tipo",
+        descripcion: a.descripcion,
+      };
+
+      productosFormateados.push(producto);
+    }
+
+    return res.status(200).json({ productos: productosFormateados });
   } catch (error) {
     console.error("Error productos", error);
     return res.status(500).json({ mensaje: "Error en el servidor" });
@@ -88,6 +100,7 @@ async function crearProducto(req, res) {
       valor_compra,
       valor_unitario,
       codigo,
+      publicado,
     } = req.body;
 
     const usuario = req.user;
@@ -108,6 +121,7 @@ async function crearProducto(req, res) {
         valor_compra: Number(valor_compra),
         valor_unitario: Number(valor_unitario),
         codigo: codigo,
+        publicado: publicado,
       },
     });
 
@@ -136,6 +150,7 @@ async function actualizarProducto(req, res) {
       valor_compra,
       valor_unitario,
       codigo,
+      publicado,
     } = req.body;
 
     const usuario = req.user;
@@ -154,6 +169,7 @@ async function actualizarProducto(req, res) {
         valor_unitario: Number(valor_unitario),
         id_usuario_modificacion,
         fecha_modificacion: new Date(),
+        publicado: publicado,
       },
     });
 
@@ -168,6 +184,7 @@ async function actualizarProducto(req, res) {
         valor_unitario: true,
         fecha_creacion: true,
         codigo: true,
+        publicado: true,
         descripcion: true,
         id_estado_producto: true,
         id_tipo_producto: true,
@@ -186,6 +203,8 @@ async function actualizarProducto(req, res) {
         },
         MOVIMIENTO_INVENTARIO: {
           select: { cantidad_disponible: true },
+          take: 1,
+          orderBy: { movimiento_inventario_Id: "desc" },
         },
       },
     });
@@ -196,11 +215,12 @@ async function actualizarProducto(req, res) {
       precioCompra: producto.valor_compra,
       precioVenta: producto.valor_unitario,
       id_estado_producto: producto.id_estado_producto,
+      publicado: producto.publicado || false,
       id_tipo_producto: producto.id_tipo_producto,
       id_proveedor: producto.id_proveedor,
       nombre_estado:
         producto.CAT_ESTADO_PRODUCTO?.nombre_estado || "Sin estado",
-      stock: producto.MOVIMIENTO_INVENTARIO?.cantidad_disponible || 0,
+      stock: producto.MOVIMIENTO_INVENTARIO[0]?.cantidad_disponible || 0,
       codigo: producto.codigo ?? "",
       proveedor: producto.CAT_PROVEEDOR?.nombre_proveedor || "Sin proveedor",
       categoria: producto.CAT_TIPO_PRODUCTO?.nombre || "Sin tipo",

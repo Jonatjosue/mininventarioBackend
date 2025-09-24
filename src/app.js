@@ -8,6 +8,7 @@ const authRoutes = require("./routes/auth.routes");
 const perfilRoutes = require("./routes/perfil.routes");
 const cargaInicialRoutes = require("./routes/cargaInicial.routes");
 const inventario = require("./routes/Inventario.routes");
+const venta = require("./routes/venta.routes");
 
 const app = express();
 const allowedOrigins = process.env.ALLOWED_ORIGINS
@@ -42,5 +43,6 @@ app.use("/api/v1/auth", authLimiter, authRoutes);
 app.use("/api/perfil", perfilRoutes);
 app.use("/api/v1/cargaInicial", cargaInicialRoutes);
 app.use("/api/v1/inventario", inventario);
+app.use("/api/v1/venta", venta);
 
 module.exports = app;

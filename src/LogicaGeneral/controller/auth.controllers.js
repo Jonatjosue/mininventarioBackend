@@ -53,6 +53,15 @@ async function login(req, res) {
           id_estado_registro: "1",
           codigo_usuario: codigoUsuario,
         },
+        include: {
+          ROLE_USUARIO: {
+            where: { id_estado_registro: "1" },
+            include: {
+              ROLE: true,
+            },
+            take: 1,
+          },
+        },
       });
     } else if (!esEmpleado && !esLoginGoogle) {
       user = await prisma.cLIENTE.findFirst({
@@ -172,7 +181,7 @@ async function login(req, res) {
       usuario: {
         id: user.id_usuario || user.id_cliente,
         correo: user?.correo_principal || user?.correo,
-        rol: user.rol || "CLIENTE",
+        rol: user?.ROLE_USUARIO?.[0].ROLE?.role || "CLIENTE",
       },
       accessToken: valoresCredenciales.accesToken,
     });
