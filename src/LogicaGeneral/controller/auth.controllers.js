@@ -171,7 +171,7 @@ async function login(req, res) {
     res.cookie("refreshToken", valoresCredenciales.rawRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // Solo HTTPS para producción
-      sameSite: "Strict", // No se envía a otros dominios
+      sameSite: "None",
       maxAge: 1 * 60 * 60 * 1000, // 1 día en ms
     });
 
@@ -410,7 +410,7 @@ async function registro(req, res) {
     res.cookie("refreshToken", token.rawRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict", // No se envía a otros dominios
+      sameSite: "None",
       maxAge: 1 * 60 * 60 * 1000, // 1 día en ms
     });
     return res.status(201).json({
@@ -515,8 +515,8 @@ async function refreshCliente(tokenHash, res, req) {
   });
   res.cookie("refreshToken", newRawRefreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "produccion", // Solo HTTPS en producción
-    sameSite: "Strict",
+    secure: process.env.NODE_ENV === "production", // Solo HTTPS en producción
+    sameSite: "None",
     maxAge: 1 * 24 * 60 * 60 * 1000,
   });
   // Devolver nuevo access token
@@ -563,8 +563,8 @@ async function refreshUsuario(tokenHash, res, req) {
   // Enviar cookie al cliente
   res.cookie("refreshToken", newRawRefreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "produccion", // Solo HTTPS en producción
-    sameSite: "Strict",
+    secure: process.env.NODE_ENV === "production", // Solo HTTPS en producción
+    sameSite: "None",
     maxAge: 1 * 24 * 60 * 60 * 1000, // 30 días
   });
   // Devolver nuevo access token
@@ -602,8 +602,8 @@ async function logout(req, res) {
   // Limpiar cookie
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "produccion",
-    sameSite: "Strict",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "None",
   });
   return res.json({ mensaje: "Logout exitoso" });
 }
