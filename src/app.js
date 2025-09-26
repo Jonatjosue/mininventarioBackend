@@ -9,8 +9,23 @@ const perfilRoutes = require("./routes/perfil.routes");
 const cargaInicialRoutes = require("./routes/cargaInicial.routes");
 const inventario = require("./routes/Inventario.routes");
 const venta = require("./routes/venta.routes");
+const Sentry = require("@sentry/node");
+const Tracing = require("@sentry/tracing");
 
 const app = express();
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [
+    new Sentry.Integrations.Http({ tracing: true }),
+    new Tracing.Integrations.Express({ app }),
+  ],
+  tracesSampleRate: 1.0,
+});
+
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
+
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
   : [];
@@ -44,5 +59,12 @@ app.use("/api/perfil", perfilRoutes);
 app.use("/api/v1/cargaInicial", cargaInicialRoutes);
 app.use("/api/v1/inventario", inventario);
 app.use("/api/v1/venta", venta);
+
+app.use(Sentry.Handlers.errorHandler());
+
+app.use((err, req, res, next) => {
+  console.error("Error atrapado:", err);
+  res.status(500).json({ message: "Algo salió mal" });
+});
 
 module.exports = app;
