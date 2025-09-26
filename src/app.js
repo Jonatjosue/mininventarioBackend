@@ -10,7 +10,6 @@ const cargaInicialRoutes = require("./routes/cargaInicial.routes");
 const inventario = require("./routes/Inventario.routes");
 const venta = require("./routes/venta.routes");
 const Sentry = require("@sentry/node");
-const Tracing = require("@sentry/tracing");
 
 const app = express();
 
@@ -18,7 +17,7 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   integrations: [
     Sentry.httpIntegration({ tracing: true }),
-    new Tracing.Integrations.Express({ app }),
+    Sentry.expressIntegration({ app }),
   ],
   tracesSampleRate: 1.0,
 });
