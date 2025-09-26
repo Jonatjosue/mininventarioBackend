@@ -16,13 +16,11 @@ const app = express();
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   integrations: [
-    Sentry.httpIntegration({ tracing: true }),
-    Sentry.expressIntegration({ app }),
+    new Sentry.Integrations.Http({ tracing: true }),
+    new Sentry.Integrations.Express({ app }),
   ],
   tracesSampleRate: 1.0,
 });
-
-app.use(Sentry.Handlers.errorHandler());
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
@@ -67,7 +65,7 @@ app.get("/", (req, res) => {
   //
   res.send("API de Inventario funcionando correctamente");
 });
-
+app.use(Sentry.Handlers.errorHandler());
 app.use((err, req, res, next) => {
   console.error("Error atrapado:", err);
   res.status(500).json({ message: "Algo salió mal" });
