@@ -15,8 +15,16 @@ const app = express();
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
+  integrations: [
+    // send console.log, console.warn, and console.error calls as logs to Sentry
+    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
+  ],
+  // Enable logs to be sent to Sentry
+  enableLogs: true,
   tracesSampleRate: 1.0,
 });
+
+Sentry.logger.info("User triggered test log", { action: "test_log" });
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
@@ -52,7 +60,6 @@ app.use("/api/v1/cargaInicial", cargaInicialRoutes);
 app.use("/api/v1/inventario", inventario);
 app.use("/api/v1/venta", venta);
 
-app.use(Sentry.Handlers.errorHandler());
 
 app.get("/", (req, res) => {
   throw new Error("Error de prueba para Sentry");
