@@ -15,10 +15,7 @@ const app = express();
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  integrations: [
-    new Sentry.Integrations.Http({ tracing: true }),
-    new Sentry.Integrations.Express({ app }),
-  ],
+  integrations: [new Sentry.Integrations.Express({ app })],
   tracesSampleRate: 1.0,
 });
 
