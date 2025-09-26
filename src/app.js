@@ -62,6 +62,14 @@ app.use("/api/v1/venta", venta);
 
 app.use(Sentry.Handlers.errorHandler());
 
+app.get("/", (req, res) => {
+  throw new Error("Error de prueba para Sentry");
+  //
+  // Ruta raíz para verificar que el servidor está funcionando
+  //
+  res.send("API de Inventario funcionando correctamente");
+});
+
 app.use((err, req, res, next) => {
   console.error("Error atrapado:", err);
   res.status(500).json({ message: "Algo salió mal" });
