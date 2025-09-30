@@ -24,6 +24,7 @@ model ACTIVO {
   PRODUCTO                                                PRODUCTO?              @relation(fields: [id_producto], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_activo_producto")
   USUARIO_ACTIVO_id_usuario_aplica_mantenimientoToUSUARIO USUARIO                @relation("ACTIVO_id_usuario_aplica_mantenimientoToUSUARIO", fields: [id_usuario_aplica_mantenimiento], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_activo_usuario_mantenimiento")
   CAT_TIPO_RIESGO_ACTIVO                                  CAT_TIPO_RIESGO_ACTIVO @relation(fields: [id_tipo_riesgo], references: [id_tipo_riesgo_activo], onDelete: NoAction, onUpdate: NoAction, map: "fk_contraint_riesto_activo_activo")
+  HISTORIAL_INCIDENTES                                    HISTORIAL_INCIDENTES[]
   MANTENIMIENTO                                           MANTENIMIENTO[]
 }
 
@@ -232,12 +233,13 @@ model CAT_TIPO_DOCUMENTO {
 }
 
 model CAT_TIPO_INCIDENTE {
-  id_tipo_incidente   Int      @id
-  tipo_incidente      String   @db.VarChar
-  descripcion         String?  @db.VarChar
-  fecha_creacion      DateTime @db.Date
-  id_usuario_creacion Int
-  id_estado_registro  String   @db.Bit(1)
+  id_tipo_incidente    Int                    @id
+  tipo_incidente       String                 @db.VarChar
+  descripcion          String?                @db.VarChar
+  fecha_creacion       DateTime               @db.Date
+  id_usuario_creacion  Int
+  id_estado_registro   String                 @db.Bit(1)
+  HISTORIAL_INCIDENTES HISTORIAL_INCIDENTES[]
 }
 
 model CAT_TIPO_MOVIMIENTO {
@@ -259,11 +261,12 @@ model CAT_TIPO_OFERTA {
 }
 
 model CAT_TIPO_POLITICA {
-  id_tipo_politica    Int      @id
-  tipo_politica       String   @db.VarChar
+  id_tipo_politica    Int        @id
+  tipo_politica       String     @db.VarChar
   id_usuario_creacion Int
-  fecha_creacion      DateTime @db.Date
-  id_estado_registro  String   @db.Bit(1)
+  fecha_creacion      DateTime   @db.Date
+  id_estado_registro  String     @db.Bit(1)
+  POLITICA            POLITICA[]
 }
 
 model CAT_TIPO_PRODUCTO {
@@ -360,6 +363,12 @@ model CLIENTE_PEDIDO {
   observacion             String                   @db.VarChar
   fecha_modificacion      DateTime?                @db.Date
   id_usuario_modificacion Int?
+  hora_creacion           DateTime?                @db.Time(6)
+  hora_modificacion       DateTime?                @db.Time(6)
+  fecha_entrega           DateTime?                @db.Date
+  hora_entrega            DateTime?                @db.Time(6)
+  fecha_finalizado        DateTime?                @db.Date
+  hora_finalizado         DateTime?                @db.Time(6)
   CLIENTE                 CLIENTE                  @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction)
   CAT_ESTADO_PEDIDO       CAT_ESTADO_PEDIDO        @relation(fields: [id_estado_pedido], references: [id_estado_pedido], onDelete: NoAction, onUpdate: NoAction)
   USUARIO                 USUARIO                  @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cliente_pedido_usuario")
@@ -432,18 +441,21 @@ model EMPRESA {
 }
 
 model HISTORIAL_INCIDENTES {
-  id_historial_incidentes Int      @id
-  observaci_n             String?  @map("observación") @db.VarChar
+  id_historial_incidentes Int                @id
+  observaci_n             String?            @map("observación") @db.VarChar
   id_tipo_incidiente      Int
   id_usuario_creacion     Int
-  fecha_creacion          DateTime @db.Date
-  id_estado_registro      String   @db.Bit(1)
+  fecha_creacion          DateTime           @db.Date
+  id_estado_registro      String             @db.Bit(1)
   id_activo               Int
   id_usuario_incidencia   Int?
   id_politica_afectada    Int?
   id_accion_correctiva    Int
-  accion_correctiva       String   @db.VarChar
-  USUARIO                 USUARIO? @relation(fields: [id_usuario_incidencia], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  accion_correctiva       String             @db.VarChar
+  USUARIO                 USUARIO?           @relation(fields: [id_usuario_incidencia], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction)
+  ACTIVO                  ACTIVO             @relation(fields: [id_activo], references: [id_activo], onDelete: NoAction, onUpdate: NoAction, map: "id_historial_incidentes_activo_fk")
+  CAT_TIPO_INCIDENTE      CAT_TIPO_INCIDENTE @relation(fields: [id_tipo_incidiente], references: [id_tipo_incidente], onDelete: NoAction, onUpdate: NoAction, map: "id_tipo_incidente_historia_fk")
+  POLITICA                POLITICA?          @relation(fields: [id_politica_afectada], references: [id_politica], onDelete: NoAction, onUpdate: NoAction, map: "id_tipo_incidente_politica_afectada_fk")
 }
 
 model LOG_INGRESO_CLIENTE {
@@ -480,15 +492,17 @@ model LOG_INGRESO_USUARIO {
 }
 
 model MANTENIMIENTO {
-  id_mantenimiento      Int                   @id
-  id_activo             Int
-  id_estado_registro    String                @db.Bit(1)
-  id_usuario_creacion   Int
-  fecha_creacion        DateTime              @db.Date
-  observacion           String                @db.VarChar
-  id_accion_correctiva  Int
-  CAT_ACCION_CORRECTIVA CAT_ACCION_CORRECTIVA @relation(fields: [id_accion_correctiva], references: [id_accion_correctiva], onDelete: NoAction, onUpdate: NoAction)
-  ACTIVO                ACTIVO                @relation(fields: [id_activo], references: [id_activo], onDelete: NoAction, onUpdate: NoAction)
+  id_mantenimiento        Int                   @id
+  id_activo               Int
+  id_estado_registro      String                @db.Bit(1)
+  id_usuario_creacion     Int
+  fecha_creacion          DateTime              @db.Date
+  observacion             String                @db.VarChar
+  id_accion_correctiva    Int
+  id_usuario_modificacion Int?
+  fecha_modificacion      DateTime?             @db.Date
+  CAT_ACCION_CORRECTIVA   CAT_ACCION_CORRECTIVA @relation(fields: [id_accion_correctiva], references: [id_accion_correctiva], onDelete: NoAction, onUpdate: NoAction)
+  ACTIVO                  ACTIVO                @relation(fields: [id_activo], references: [id_activo], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model MENU {
@@ -563,13 +577,17 @@ model OPCION {
 }
 
 model POLITICA {
-  id_politica         Int    @id
-  politica            String @db.VarChar
-  descripcion         String @db.VarChar
-  id_tipo_politica    Int
-  id_usuario_creacion Int
-  fecha_creacion      Int
-  id_estado_registro  String @db.Bit(1)
+  id_politica             Int                    @id
+  politica                String                 @db.VarChar
+  descripcion             String                 @db.VarChar
+  id_tipo_politica        Int
+  id_usuario_creacion     Int
+  fecha_creacion          Int
+  id_estado_registro      String                 @db.Bit(1)
+  id_usuario_modificacion Int?
+  fecha_modificacion      DateTime?              @db.Date
+  HISTORIAL_INCIDENTES    HISTORIAL_INCIDENTES[]
+  CAT_TIPO_POLITICA       CAT_TIPO_POLITICA      @relation(fields: [id_tipo_politica], references: [id_tipo_politica], onDelete: NoAction, onUpdate: NoAction, map: "id_tipo_politica_fk_politica")
 }
 
 model PRODUCTO {

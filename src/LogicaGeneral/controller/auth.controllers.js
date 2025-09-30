@@ -170,8 +170,8 @@ async function login(req, res) {
 
     res.cookie("refreshToken", valoresCredenciales.rawRefreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Solo HTTPS para producción
-      sameSite: "None",
+      secure: process.env.NODE_ENV === "production", // Solo HTTPS en producción
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 1 * 60 * 60 * 1000, // 1 día en ms
     });
 
@@ -410,7 +410,7 @@ async function registro(req, res) {
     res.cookie("refreshToken", token.rawRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "None",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 1 * 60 * 60 * 1000, // 1 día en ms
     });
     return res.status(201).json({
@@ -455,7 +455,7 @@ async function refresh(req, res) {
   try {
     const rawRefreshToken = req.cookies.refreshToken;
     if (!rawRefreshToken)
-      return res.status(401).json({ error: "No token enviado" });
+      return res.status(401).json({ error: "No tokenRefresh enviado" });
 
     const tokenHash = makeTokenId(rawRefreshToken);
 
@@ -516,7 +516,7 @@ async function refreshCliente(tokenHash, res, req) {
   res.cookie("refreshToken", newRawRefreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // Solo HTTPS en producción
-    sameSite: "None",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     maxAge: 1 * 24 * 60 * 60 * 1000,
   });
   // Devolver nuevo access token
@@ -564,7 +564,7 @@ async function refreshUsuario(tokenHash, res, req) {
   res.cookie("refreshToken", newRawRefreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // Solo HTTPS en producción
-    sameSite: "None",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     maxAge: 1 * 24 * 60 * 60 * 1000, // 30 días
   });
   // Devolver nuevo access token
@@ -574,15 +574,15 @@ async function refreshUsuario(tokenHash, res, req) {
 async function logout(req, res) {
   const rawRefreshToken = req.cookies.refreshToken;
   if (!rawRefreshToken)
-    return res.status(400).json({ error: "No token enviado" });
+    return res.status(400).json({ error: "No tokenRefresh enviado" });
   const tokenHash = makeTokenId(rawRefreshToken);
   // Buscar token en la BD
 
-  if (req.user == null) {
-    return res.status(403).json({ error: "No autorizado" });
+  if (req.userMeta == null) {
+    return res.status(403).json({ error: "No autorizado no usuario" });
   }
-  const esEmpleado = req.user.hasOwnProperty("userId");
-  const esCliente = req.user.hasOwnProperty("id_cliente");
+  const esEmpleado = req.userMeta.hasOwnProperty("userId");
+  const esCliente = req.userMeta.hasOwnProperty("id_cliente");
 
   if (!esEmpleado && !esCliente) {
     return res.status(403).json({ error: "No autorizado" });
@@ -590,9 +590,9 @@ async function logout(req, res) {
 
   try {
     if (esEmpleado) {
-      await logoutusuario(req.user, tokenHash);
+      await logoutusuario(req.userMeta, tokenHash);
     } else if (esCliente) {
-      await logoutcliente(req.user, tokenHash);
+      await logoutcliente(req.userMeta, tokenHash);
     }
   } catch (error) {
     console.error("Error al logout", error);
@@ -603,7 +603,7 @@ async function logout(req, res) {
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "None",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
   });
   return res.json({ mensaje: "Logout exitoso" });
 }

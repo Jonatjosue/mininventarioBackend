@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const { formatearHora } = require("../../utils/utils");
 const prisma = new PrismaClient();
 
 async function obtenerEstadosPedido(req, res) {
@@ -56,6 +57,7 @@ async function obtenerProductosPedido(req, res) {
         CAT_ESTADO_PRODUCTO: {
           is: { id_estado_registro: "1", nombre_estado: "ACTIVO" },
         },
+        publicado: true,
       },
       select: {
         p_producto_Id: true,
@@ -81,7 +83,7 @@ async function crearPedido(req, res) {
   try {
     const usuario = req.user;
     const id_usuario_creacion = usuario?.userId || 3; // ID por defecto si no está autenticado
-    const { id_cliente, productos, observacion } = req.body;
+    const { id_cliente, productos, observacion, fecha_entrega } = req.body;
 
     if (usuario.id_cliente) {
       const ultimoPedido = await prisma.cLIENTE_PEDIDO.findFirst({
@@ -119,6 +121,11 @@ async function crearPedido(req, res) {
         .status(500)
         .json({ mensaje: "No se encontró el estado 'En recepcion'" });
     }
+    const fechaEntrega = fecha_entrega
+      ? new Date(fecha_entrega)
+      : new Date(new Date().getTime() + 60 * 60 * 1000);
+    const horaEntrega = formatearHora(fechaEntrega, "HH:MM", "prisma-time");
+    const hora_creacion = formatearHora(new Date(), "HH:MM", "prisma-time");
     const nuevoPedido = await prisma.cLIENTE_PEDIDO.create({
       data: {
         cantidad_productos: productos.length,
@@ -128,7 +135,10 @@ async function crearPedido(req, res) {
           0
         ),
         fecha_creacion: new Date(),
-        observacion,
+        hora_creacion: hora_creacion,
+        fecha_entrega: fechaEntrega,
+        observacion: observacion || "",
+        hora_entrega: horaEntrega,
         UID_PEDIDO: require("crypto").randomUUID(),
         id_estado_registro: "1",
         CLIENTE: {
@@ -208,6 +218,11 @@ async function obtenerPedidos(req, res) {
       cantidad_productos: pedido.cantidad_productos,
       valor_total: pedido.valor_total,
       fecha_creacion: pedido.fecha_creacion,
+      hora_creacion: pedido.hora_creacion,
+      fecha_entrega: pedido.fecha_entrega,
+      hora_entrega: pedido.hora_entrega,
+      fech_finalizado: pedido.fecha_finalizado,
+      hora_finalizado: pedido.hora_finalizado,
       observacion: pedido.observacion,
       UID_PEDIDO: pedido.UID_PEDIDO,
     }));
@@ -278,6 +293,17 @@ async function actualizarEstadoPedido(req, res) {
     if (!pedidoExistente) {
       return res.status(404).json({ mensaje: "El pedido no existe" });
     }
+    const estado = await prisma.cAT_ESTADO_PEDIDO.findFirst({
+      where: {
+        id_estado_pedido: id_estado_pedido,
+      },
+    });
+    let fechaFinalizado = null;
+    let hora_finalizado = null;
+    if (estado.estado_pedido.toLowerCase() === "entregado") {
+      fechaFinalizado = new Date();
+      hora_finalizado = formatearHora(fechaFinalizado, "HH:MM", "prisma-time");
+    }
     await prisma.cLIENTE_PEDIDO.update({
       where: { id_cliente_pedido },
       data: {
@@ -286,6 +312,8 @@ async function actualizarEstadoPedido(req, res) {
         },
         id_usuario_modificacion,
         fecha_modificacion: new Date(),
+        fecha_finalizado: fechaFinalizado,
+        hora_finalizado: hora_finalizado,
       },
     });
     return res

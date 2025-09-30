@@ -14,7 +14,7 @@ const {
 router.post("/login", login);
 router.get("/rutasInicio", getRutasIniciales);
 router.post("/refreshToken", obtenerMetaToken, refresh);
-router.post("/logout", verificarToken, logout);
+router.post("/logout", obtenerMetaToken, logout);
 router.post("/SignUp", registro);
 
 module.exports = router;

@@ -201,11 +201,15 @@ async function borrarFacturayDetalle(req, res) {
         data: {
           usuario_modifica: usuarioBorra.correo_principal,
           entidad_modificada: "FACTURA Y DETALLE FACTURA",
-          fecha_modificacion: new Date().toISOString(),
+          fecha_modificacion: new Date().toString(),
           id_entidad_modificada: factura.id_factura,
           valor_modificado_int_decimal: factura.id_factura,
           valor_modificado_varchar: JSON.stringify(factura),
-          observacion: `Borrado por el usuario ${usuarioBorra.nombre_usuario} (ID: ${usuarioBorra.id_usuario})`,
+          observacion: `Factura No. ${factura.numero_factura} Serie. ${
+            factura.serie_factura
+          } Borrada por el usuario ${
+            usuarioBorra.p_nombre + " " + usuarioBorra.p_apellido
+          } `,
         },
       });
 
