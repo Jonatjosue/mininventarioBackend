@@ -9,22 +9,26 @@ const perfilRoutes = require("./routes/perfil.routes");
 const cargaInicialRoutes = require("./routes/cargaInicial.routes");
 const inventario = require("./routes/Inventario.routes");
 const venta = require("./routes/venta.routes");
+const opcionesGenerales = require("./routes/opcionesGenerales.router");
+const cliente = require("./routes/cliente.routes");
 const Sentry = require("@sentry/node");
 
 const app = express();
 
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  integrations: [
-    // send console.log, console.warn, and console.error calls as logs to Sentry
-    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
-  ],
-  // Enable logs to be sent to Sentry
-  enableLogs: true,
-  tracesSampleRate: 1.0,
-});
+if (process.env.NODE_ENV === "production") {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    integrations: [
+      // send console.log, console.warn, and console.error calls as logs to Sentry
+      Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
+    ],
+    // Enable logs to be sent to Sentry
+    enableLogs: true,
+    tracesSampleRate: 1.0,
+  });
 
-Sentry.logger.info("User triggered test log", { action: "test_log" });
+  Sentry.logger.info("User triggered test log", { action: "test_log" });
+}
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
@@ -59,7 +63,8 @@ app.use("/api/perfil", perfilRoutes);
 app.use("/api/v1/cargaInicial", cargaInicialRoutes);
 app.use("/api/v1/inventario", inventario);
 app.use("/api/v1/venta", venta);
-
+app.use("/api/v1/opcionesGenerales", opcionesGenerales);
+app.use("/api/v1/cliente", cliente);
 
 app.get("/", (req, res) => {
   throw new Error("Error de prueba para Sentry");

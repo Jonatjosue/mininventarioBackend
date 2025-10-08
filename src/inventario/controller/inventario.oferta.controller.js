@@ -316,8 +316,25 @@ async function agregarOfertaProducto(req, res) {
       return res.status(404).json({ error: "Oferta no encontrada" });
     }
 
+    /**se realizar el calculo segun el valor que aplique */
+    let valorCalculado = 0;
+    const ofertaParaCalculo = await prisma.oFERTA.findUnique({
+      where: { id_oferta: parseInt(id_oferta) },
+    });
+
+    if (!aplica_por_porcentaje) {
+      valorCalculado =
+        Number(producto.valor_unitario) -
+        Number(ofertaParaCalculo.valor_oferta_numerico);
+    } else if (aplica_por_porcentaje) {
+      valorCalculado =
+        Number(producto.valor_unitario) -
+        (ofertaParaCalculo.valor_oferta_porcentaje / 100) *
+          producto.valor_unitario;
+    }
+
     // Crear la relación producto-oferta
-    await prisma.pRODUCTO_OFERTA.create({
+    const productoOferta = await prisma.pRODUCTO_OFERTA.create({
       data: {
         p_producto_id: parseInt(id_producto),
         id_oferta: parseInt(id_oferta),
@@ -328,10 +345,10 @@ async function agregarOfertaProducto(req, res) {
         aplica_por_porcentaje: aplica_por_porcentaje,
         fecha_creacion: new Date(),
         fecha_modificacion: new Date(),
+        valor_calculado: valorCalculado,
       },
     });
 
-    // Ahora devolvemos el producto con sus ofertas, igual que en ofertasProductoPorId
     const hoy = new Date();
 
     const productoConOfertas = await prisma.pRODUCTO.findFirst({

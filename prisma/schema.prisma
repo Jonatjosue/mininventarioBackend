@@ -39,17 +39,6 @@ model BITACORA_BORRADO_INTERNO {
   valor_modificado_int_decimal Decimal? @db.Decimal
 }
 
-model BITACORA_MODIFICACION_INTERNA {
-  id_bitacora                  Int      @id
-  entidad_modificada           String   @db.VarChar
-  fecha_modificacion           String   @db.VarChar
-  id_entidad_modificada        Int
-  usuario_modifica             String   @db.VarChar
-  valor_modificado_varchar     String?  @db.VarChar
-  observacion                  String?  @db.VarChar
-  valor_modificado_int_decimal Decimal? @db.Decimal
-}
-
 model CAT_ACCION_CORRECTIVA {
   id_accion_correctiva Int             @id
   accion               String          @db.VarChar
@@ -192,7 +181,7 @@ model CAT_TIPO_ACTIVO {
 }
 
 model CAT_TIPO_CONFIGURACION_GENERAL {
-  id_tipo_configuracion_general Int                     @id
+  id_tipo_configuracion_general Int                     @id @default(autoincrement())
   tipo_configuracion            String                  @db.VarChar
   descripcion                   String?                 @db.VarChar
   id_estado_registro            String                  @db.Bit(1)
@@ -220,7 +209,7 @@ model CAT_TIPO_DESCUENTO {
 }
 
 model CAT_TIPO_DOCUMENTO {
-  id_tipo_documento      Int                      @id
+  id_tipo_documento      Int                      @id @default(autoincrement())
   descripcion            String                   @db.VarChar
   valor                  String                   @db.VarChar
   id_estado_registro     String                   @db.Bit(1)
@@ -292,31 +281,35 @@ model CAT_TIPO_RIESGO_ACTIVO {
 }
 
 model CLIENTE {
-  id_cliente              Int                      @id @default(autoincrement())
-  p_nombre                String                   @db.VarChar
-  s_nombre                String?                  @db.VarChar
-  p_apellido              String                   @db.VarChar
-  s_apellido              String?                  @db.VarChar
-  fecha_creacion          DateTime                 @db.Date
-  fecha_modificacion      DateTime                 @db.Date
-  id_usuario_creacion     Int
-  id_usuario_modificacion Int
-  contrasenia             String                   @db.VarChar
-  fecha_ultimo_acceso     DateTime                 @db.Date
-  id_sexo                 Int?
-  uui_d_cliente           String?                  @db.Uuid
-  correo                  String?                  @db.VarChar(255)
-  token_version           Int?
-  CAT_SEXO                CAT_SEXO?                @relation(fields: [id_sexo], references: [sexo_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cliente_sexo")
-  CLIENTE_IDENTIFICACION  CLIENTE_IDENTIFICACION[]
-  CLIENTE_PEDIDO          CLIENTE_PEDIDO[]
-  LOG_INGRESO_CLIENTE     LOG_INGRESO_CLIENTE[]
-  REFRESH_TOKEN_CLIENTE   REFRESH_TOKEN_CLIENTE[]
-  TELEFONO_CLIENTE        TELEFONO_CLIENTE[]
+  id_cliente                Int                         @id @default(autoincrement())
+  p_nombre                  String                      @db.VarChar
+  s_nombre                  String?                     @db.VarChar
+  p_apellido                String                      @db.VarChar
+  s_apellido                String?                     @db.VarChar
+  fecha_creacion            DateTime                    @db.Date
+  fecha_modificacion        DateTime                    @db.Date
+  id_usuario_creacion       Int
+  id_usuario_modificacion   Int?
+  contrasenia               String                      @db.VarChar
+  fecha_ultimo_acceso       DateTime                    @db.Date
+  id_sexo                   Int?
+  uui_d_cliente             String?                     @db.Uuid
+  correo                    String?                     @db.VarChar(255)
+  token_version             Int?
+  fecha_actualiza_datos     DateTime?                   @db.Timestamp(6)
+  datos_actualizados        Boolean?
+  CAT_SEXO                  CAT_SEXO?                   @relation(fields: [id_sexo], references: [sexo_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cliente_sexo")
+  CLIENTE_DIRECCION_FACTURA CLIENTE_DIRECCION_FACTURA[]
+  CLIENTE_IDENTIFICACION    CLIENTE_IDENTIFICACION[]
+  CLIENTE_PEDIDO            CLIENTE_PEDIDO[]
+  FACTURA_CLIENTE           FACTURA_CLIENTE[]
+  LOG_INGRESO_CLIENTE       LOG_INGRESO_CLIENTE[]
+  REFRESH_TOKEN_CLIENTE     REFRESH_TOKEN_CLIENTE[]
+  TELEFONO_CLIENTE          TELEFONO_CLIENTE[]
 }
 
 model CLIENTE_CONTACTO {
-  id_cliente_contacto     Int      @id
+  id_cliente_contacto     Int      @id @default(autoincrement())
   valor_contacto          String   @db.VarChar
   id_tipo_contacto        Int
   id_estado_registro      String   @db.Bit(1)
@@ -342,10 +335,11 @@ model CLIENTE_IDENTIFICACION {
   id_tipo_documento         Int
   id_estado_registro        String             @db.Bit(1)
   fecha_creacion            DateTime           @db.Date
-  id_usuario_creacion       Int
+  id_usuario_creacion       Int?
   id_cliente                Int
-  id_usuario_modificacion   Int
+  id_usuario_modificacion   Int?
   fecha_modificacion        DateTime           @db.Date
+  id_bitacora               Int?
   CLIENTE                   CLIENTE            @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction)
   CAT_TIPO_DOCUMENTO        CAT_TIPO_DOCUMENTO @relation(fields: [id_tipo_documento], references: [id_tipo_documento], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -373,6 +367,7 @@ model CLIENTE_PEDIDO {
   CAT_ESTADO_PEDIDO       CAT_ESTADO_PEDIDO        @relation(fields: [id_estado_pedido], references: [id_estado_pedido], onDelete: NoAction, onUpdate: NoAction)
   USUARIO                 USUARIO                  @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_cliente_pedido_usuario")
   CLIENTE_PEDIDO_DETALLE  CLIENTE_PEDIDO_DETALLE[]
+  FACTURA_CLIENTE         FACTURA_CLIENTE[]
 }
 
 model CLIENTE_PEDIDO_DETALLE {
@@ -391,7 +386,7 @@ model CLIENTE_PEDIDO_DETALLE {
 }
 
 model CONFIGURACION_GENERAL {
-  id_configuracion_general       Int                            @id
+  id_configuracion_general       Int                            @id @default(autoincrement())
   parametro_int_1                Int?
   parametro_int_2                Int?
   parametro_var_1                String?                        @db.VarChar
@@ -410,19 +405,21 @@ model CONFIGURACION_GENERAL {
 }
 
 model DIRECCION {
-  id_direccion            Int           @id @default(autoincrement())
-  id_municipio            Int
-  direccion_completa      String        @db.VarChar
-  no_casa                 String        @db.VarChar
-  no_calle                String        @db.VarChar
-  id_estado_registro      String        @db.Bit(1)
-  id_usuario_creacion     Int
-  id_usuario_modificacion Int
-  fecha_creacion          DateTime      @db.Date
-  fecha_modificacion      DateTime      @db.Date
-  CAT_MUNICIPIO           CAT_MUNICIPIO @relation(fields: [id_municipio], references: [id_municipio], onDelete: NoAction, onUpdate: NoAction, map: "fk_direccion_municipio")
-  EMPRESA                 EMPRESA[]
-  SUCURSAL                SUCURSAL[]
+  id_direccion              Int                         @id @default(autoincrement())
+  id_municipio              Int
+  direccion_completa        String                      @db.VarChar
+  no_casa                   String                      @db.VarChar
+  no_calle                  String                      @db.VarChar
+  id_estado_registro        String                      @db.Bit(1)
+  id_usuario_creacion       Int?
+  id_usuario_modificacion   Int?
+  fecha_creacion            DateTime                    @db.Date
+  fecha_modificacion        DateTime                    @db.Date
+  id_bitacora_modificacion  Int?
+  CLIENTE_DIRECCION_FACTURA CLIENTE_DIRECCION_FACTURA[]
+  CAT_MUNICIPIO             CAT_MUNICIPIO               @relation(fields: [id_municipio], references: [id_municipio], onDelete: NoAction, onUpdate: NoAction, map: "fk_direccion_municipio")
+  EMPRESA                   EMPRESA[]
+  SUCURSAL                  SUCURSAL[]
 }
 
 model EMPRESA {
@@ -591,29 +588,30 @@ model POLITICA {
 }
 
 model PRODUCTO {
-  p_producto_Id           Int                      @id @default(autoincrement())
-  nombre_producto         String                   @db.VarChar
-  descripcion             String?                  @db.VarChar
-  fecha_creacion          DateTime                 @db.Date
-  fecha_modificacion      DateTime                 @db.Date
+  p_producto_Id           Int                       @id @default(autoincrement())
+  nombre_producto         String                    @db.VarChar
+  descripcion             String?                   @db.VarChar
+  fecha_creacion          DateTime                  @db.Date
+  fecha_modificacion      DateTime                  @db.Date
   id_usuario_creacion     Int
   id_usuario_modificacion Int
-  id_estado_registro      String                   @db.Bit(1)
+  id_estado_registro      String                    @db.Bit(1)
   id_estado_producto      Int
-  valor_unitario          Decimal                  @db.Decimal
-  valor_compra            Decimal                  @db.Decimal
+  valor_unitario          Decimal                   @db.Decimal
+  valor_compra            Decimal                   @db.Decimal
   id_proveedor            Int
   id_tipo_producto        Int?
-  codigo                  String?                  @db.VarChar(150)
+  codigo                  String?                   @db.VarChar(150)
   publicado               Boolean?
   ACTIVO                  ACTIVO[]
   CLIENTE_PEDIDO_DETALLE  CLIENTE_PEDIDO_DETALLE[]
   DETALLE_FACTURA         DETALLE_FACTURA[]
+  FACTURA_CLIENTE_DETALLE FACTURA_CLIENTE_DETALLE[]
   LOG_PRODUCTO            LOG_PRODUCTO[]
   MOVIMIENTO_INVENTARIO   MOVIMIENTO_INVENTARIO[]
-  CAT_ESTADO_PRODUCTO     CAT_ESTADO_PRODUCTO      @relation(fields: [id_estado_producto], references: [id_estado_producto], onDelete: NoAction, onUpdate: NoAction)
-  CAT_PROVEEDOR           CAT_PROVEEDOR            @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_cat_proveedor")
-  CAT_TIPO_PRODUCTO       CAT_TIPO_PRODUCTO?       @relation(fields: [id_tipo_producto], references: [id_tipo_producto], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_tipo_producto")
+  CAT_ESTADO_PRODUCTO     CAT_ESTADO_PRODUCTO       @relation(fields: [id_estado_producto], references: [id_estado_producto], onDelete: NoAction, onUpdate: NoAction)
+  CAT_PROVEEDOR           CAT_PROVEEDOR             @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_cat_proveedor")
+  CAT_TIPO_PRODUCTO       CAT_TIPO_PRODUCTO?        @relation(fields: [id_tipo_producto], references: [id_tipo_producto], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_tipo_producto")
   PRODUCTO_OFERTA         PRODUCTO_OFERTA[]
 }
 
@@ -674,7 +672,7 @@ model TELEFONO_CLIENTE {
   telefono            Int
   id_empresa          Int?
   fecha_creacion      DateTime            @db.Date
-  id_usuario_creacion Int
+  id_usuario_creacion Int?
   id_estado_registro  String              @db.Bit(1)
   id_estado_telefono  Int
   id_cliente          Int
@@ -708,7 +706,7 @@ model USUARIO {
   usuario_modificacion                                   String                       @db.VarChar
   id_sexo                                                Int
   id_estado_registro                                     String                       @db.Bit(1)
-  id_direccion                                           Int
+  id_direccion                                           Int?
   fecha_nacimiento                                       DateTime                     @db.Date
   contrasenia                                            String                       @db.VarChar
   intentos_ingreso                                       Int
@@ -860,25 +858,28 @@ model PRODUCTO_OFERTA {
   aplica_por_porcentaje   Boolean?
   id_usuario_modificacion Int?
   fecha_modificacion      DateTime? @db.Date
+  valor_calculado         Decimal?  @db.Decimal(18, 0)
   USUARIO                 USUARIO   @relation(fields: [id_usuario_creacion], references: [usuario_id], onDelete: NoAction, onUpdate: NoAction, map: "PRODUCTO_VALOR_FINAL_id_usuario_creacion_fkey")
   OFERTA                  OFERTA?   @relation(fields: [id_oferta], references: [id_oferta], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_oferta_oferta")
   PRODUCTO                PRODUCTO  @relation(fields: [p_producto_id], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_producto_oferta_producto")
 }
 
 model CAT_ESTADO_FACTURA {
-  id_estado_factura   Int       @id @default(autoincrement())
-  estado              String    @db.VarChar(255)
-  fecha_creacion      DateTime? @default(now()) @db.Timestamp(6)
+  id_estado_factura   Int               @id @default(autoincrement())
+  estado              String            @db.VarChar(255)
+  fecha_creacion      DateTime?         @default(now()) @db.Timestamp(6)
   id_usuario_creacion Int?
   FACTURA             FACTURA[]
+  FACTURA_CLIENTE     FACTURA_CLIENTE[]
 }
 
 model CAT_TIPO_PAGO {
-  id_tipo_pago        Int       @id @default(autoincrement())
-  descripcion_pago    String    @db.VarChar(255)
-  fecha_creacion      DateTime? @default(now()) @db.Timestamp(6)
+  id_tipo_pago        Int               @id @default(autoincrement())
+  descripcion_pago    String            @db.VarChar(255)
+  fecha_creacion      DateTime?         @default(now()) @db.Timestamp(6)
   id_usuario_creacion Int?
   FACTURA             FACTURA[]
+  FACTURA_CLIENTE     FACTURA_CLIENTE[]
 }
 
 model DETALLE_FACTURA {
@@ -918,4 +919,69 @@ model FACTURA {
   CAT_ESTADO_FACTURA      CAT_ESTADO_FACTURA @relation(fields: [id_estado_factura], references: [id_estado_factura], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_estado")
   CAT_PROVEEDOR           CAT_PROVEEDOR      @relation(fields: [id_proveedor], references: [id_proveedor], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_proveedor")
   CAT_TIPO_PAGO           CAT_TIPO_PAGO      @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_tipo_pago")
+}
+
+model FACTURA_CLIENTE {
+  id_factura_cliente      Int                       @id @default(autoincrement())
+  id_cliente_pedido       Int?
+  id_cliente              Int?
+  numero_factura          String                    @db.VarChar(150)
+  serie_factura           String?                   @db.VarChar(150)
+  fecha_emision           DateTime                  @db.Timestamp(6)
+  fecha_vencimiento       DateTime?                 @db.Timestamp(6)
+  id_usuario_creacion     Int
+  id_usuario_modificacion Int?
+  fecha_modificacion      DateTime?                 @db.Timestamp(6)
+  id_estado_factura       Int
+  id_tipo_pago            Int
+  subtotal                Decimal                   @db.Decimal(18, 2)
+  impuestos               Decimal?                  @db.Decimal(18, 2)
+  total                   Decimal                   @db.Decimal(18, 2)
+  direccion_factura       String?                   @db.VarChar(150)
+  telefono                String?                   @db.VarChar(20)
+  nit                     String?                   @db.VarChar(100)
+  persona                 String?                   @db.VarChar(255)
+  CLIENTE                 CLIENTE?                  @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_cliente_cliente")
+  CLIENTE_PEDIDO          CLIENTE_PEDIDO?           @relation(fields: [id_cliente_pedido], references: [id_cliente_pedido], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_cliente_pedido")
+  CAT_ESTADO_FACTURA      CAT_ESTADO_FACTURA        @relation(fields: [id_estado_factura], references: [id_estado_factura], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_estado")
+  CAT_TIPO_PAGO           CAT_TIPO_PAGO             @relation(fields: [id_tipo_pago], references: [id_tipo_pago], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_tipo_pago")
+  FACTURA_CLIENTE_DETALLE FACTURA_CLIENTE_DETALLE[]
+}
+
+model FACTURA_CLIENTE_DETALLE {
+  id_factura_cliente_detalle Int             @id @default(autoincrement())
+  id_factura_cliente         Int
+  p_producto_id              Int
+  cantidad                   Decimal         @db.Decimal(18, 2)
+  cantidad_total_unidad      Decimal?        @db.Decimal(18, 2)
+  observacion                String?         @db.VarChar(255)
+  fecha_creacion             DateTime        @default(now()) @db.Timestamp(6)
+  id_usuario_creacion        Int
+  id_estado_registro         String          @db.Bit(1)
+  subtotal                   Decimal?        @db.Decimal(18, 2)
+  descuento                  Decimal?        @db.Decimal(18, 2)
+  impuestos                  Decimal?        @db.Decimal(18, 2)
+  total                      Decimal?        @db.Decimal(18, 2)
+  FACTURA_CLIENTE            FACTURA_CLIENTE @relation(fields: [id_factura_cliente], references: [id_factura_cliente], onDelete: NoAction, onUpdate: NoAction, map: "fk_detalle_factura")
+  PRODUCTO                   PRODUCTO        @relation(fields: [p_producto_id], references: [p_producto_Id], onDelete: NoAction, onUpdate: NoAction, map: "fk_detalle_producto")
+}
+
+model BITACORA_MODIFICACION {
+  id_bitacora                  Int      @id(map: "BITACORA_MODIFICACION_INTERNA_pkey") @default(autoincrement())
+  entidad_modificada           String   @db.VarChar
+  fecha_modificacion           String   @db.VarChar
+  id_entidad_modificada        Int
+  usuario_modifica             String   @db.VarChar
+  valor_modificado_varchar     String?  @db.VarChar
+  observacion                  String?  @db.VarChar
+  valor_modificado_int_decimal Decimal? @db.Decimal
+}
+
+model CLIENTE_DIRECCION_FACTURA {
+  id_cliente_direccion_factura Int        @id @default(autoincrement())
+  id_cliente                   Int?
+  id_direccion                 Int?
+  id_estado_registro           String?    @db.Bit(1)
+  CLIENTE                      CLIENTE?   @relation(fields: [id_cliente], references: [id_cliente], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_cliente_direccion")
+  DIRECCION                    DIRECCION? @relation(fields: [id_direccion], references: [id_direccion], onDelete: NoAction, onUpdate: NoAction, map: "fk_factura_cliente_direccion_direccion")
 }

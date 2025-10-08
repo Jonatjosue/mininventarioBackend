@@ -43,7 +43,7 @@ const {
   obtenerProductosPorProveedor,
   obtenerMovimientosInventario,
   agregarMovimientoProducto,
-  borrarFacturayDetalle
+  borrarFacturayDetalle,
 } = require("../inventario/controller/inventario.movimiento.controller");
 
 router.get("/ObtenerProveedores", verificarToken, obtenerProveedores);

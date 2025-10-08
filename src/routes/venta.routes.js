@@ -10,6 +10,12 @@ const {
   obtenerDetallePedido,
   actualizarEstadoPedido,
   obtenerProductosParaCompra,
+  obtenerClientePorCorreo,
+  obtenerConsidenciasCorreo,
+  clienteDebeActualizar,
+  obtenerPedidosPorNumero,
+  crearFacturaCliente,
+  obtenerFacturasClientes,
 } = require("../venta/controller/venta.controller.js");
 
 router.post("/crearPedido", verificarToken, crearPedido);
@@ -24,6 +30,16 @@ router.get(
   obtenerProductosParaCompra
 );
 router.post("/actualizarEstadoPedido", verificarToken, actualizarEstadoPedido);
+router.get("/obtenerClientePorCorreo", verificarToken, obtenerClientePorCorreo);
+router.get("/clienteDebeActualizar", verificarToken, clienteDebeActualizar);
+router.get(
+  "/obtenerConsidenciasCorreo",
+  verificarToken,
+  obtenerConsidenciasCorreo
+);
+router.get("/obtenerPedidosPorNumero", verificarToken, obtenerPedidosPorNumero);
+router.post("/crearFacturaCliente", verificarToken, crearFacturaCliente);
+router.get("/obtenerFacturasClientes", verificarToken, obtenerFacturasClientes);
 /*
 router.post(
   "/agregarMovimientoProducto",

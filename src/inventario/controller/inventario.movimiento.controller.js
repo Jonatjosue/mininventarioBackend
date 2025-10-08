@@ -1,4 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
+const {
+  obtenerPorcentajeIvaMetodo,
+} = require("../../opcionesGenerales/general.controller");
 const prisma = new PrismaClient();
 
 async function obtenerTiposPago(req, res) {
@@ -18,7 +21,21 @@ async function obtenerTiposPago(req, res) {
 
 async function obtenerEstadosFactura(req, res) {
   try {
+    const filtro = req.query.filtro || "";
+    let estadosFiltro = [];
+    if (filtro === "FacturaCliente") {
+      estadosFiltro = ["pagado", "pendiente"];
+    }
+    if (filtro === "FacturaProveedor") {
+      estadosFiltro = ["pagado", "pendiente", "borrador"];
+    }
     const estados = await prisma.cAT_ESTADO_FACTURA.findMany({
+      where: {
+        estado: {
+          in: estadosFiltro.length > 0 ? estadosFiltro : undefined,
+          mode: "insensitive",
+        },
+      },
       select: {
         id_estado_factura: true,
         estado: true,
@@ -251,6 +268,9 @@ async function agregarMovimientoProducto(req, res) {
       id_factura !== null &&
       id_factura !== "" &&
       !isNaN(Number(id_factura));
+    let porcentajeIva = await obtenerPorcentajeIvaMetodo();
+    console.log(porcentajeIva);
+    porcentajeIva = Number(porcentajeIva.iva) || 0;
 
     const result = await prisma.$transaction(async (tx) => {
       const tipoMovimiento = await tx.cAT_TIPO_MOVIMIENTO.findFirst({
@@ -287,8 +307,9 @@ async function agregarMovimientoProducto(req, res) {
             fecha_modificacion: new Date(),
             id_tipo_pago,
             id_estado_factura,
-            subtotal: 0,
-            total,
+            subtotal: total,
+            impuestos: (porcentajeIva / 100) * total,
+            total: (porcentajeIva / 100) * total + total,
           },
         });
 
@@ -307,8 +328,9 @@ async function agregarMovimientoProducto(req, res) {
             fecha_modificacion: new Date(),
             id_tipo_pago,
             id_estado_factura,
-            subtotal: 0,
-            total,
+            subtotal: total,
+            impuestos: (porcentajeIva / 100) * total,
+            total: (porcentajeIva / 100) * total + total,
           },
         });
       }
@@ -323,8 +345,8 @@ async function agregarMovimientoProducto(req, res) {
           precio_unitario: item.precio,
           descuento: item.descuento ?? 0,
           subtotal: item.cantidad * item.precio,
-          impuestos: item.impuestos ?? 0,
-          total: item.total,
+          impuestos: (porcentajeIva / 100) * item.total,
+          total: (porcentajeIva / 100) * item.total + item.total,
           es_lote: item.es_lote ?? false,
           precio_lote: item.precio_lote ?? 0,
         })),
